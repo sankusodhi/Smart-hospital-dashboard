@@ -1,0 +1,66 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.226.121.159:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 482-786-754
+127.0.0.1 - - [20/Jan/2026 19:07:18] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:07:18] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:07:18] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:07:19] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:07:19] "GET /static/css/dashboard_system.css HTTP/1.1" 304 -
+127.0.0.1 - - [20/Jan/2026 19:07:19] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Jan/2026 19:18:14] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:18:14] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:18:15] "GET /static/css/dashboard_system.css HTTP/1.1" 304 -
+127.0.0.1 - - [20/Jan/2026 19:38:41] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:38:50] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:38:51] "GET /static/css/dashboard_system.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:39:01] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Jan/2026 19:39:19] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:39:19] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:39:21] "GET /patient-registration HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:39:22] "GET /static/css/dashboard_system.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:41:36] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:41:37] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:41:37] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:41:37] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:41:37] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:41:39] "GET /static/css/dashboard_system.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:41:39] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:41:39] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Jan/2026 19:41:39] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Jan/2026 19:41:41] "GET /static/css/dashboard_system.css HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:41:43] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Jan/2026 19:41:55] "GET /opd-queue HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:41:55] "POST /patient-registration HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:41:55] "GET /opd-queue-advanced HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:41:55] "GET /api/opd-queue?department=All%20Departments HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:41:56] "GET /registration-success?token=93351 HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:44:00] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:44:01] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:44:02] "GET /static/css/dashboard_system.css HTTP/1.1" 304 -
+127.0.0.1 - - [20/Jan/2026 19:44:21] "GET /opd-queue HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:44:22] "GET /opd-queue-advanced HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:44:22] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:44:22] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:44:23] "GET /static/css/dashboard_system.css HTTP/1.1" 304 -
+127.0.0.1 - - [20/Jan/2026 19:44:23] "GET /api/opd-queue?department=All%20Departments HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:44:23] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Jan/2026 19:45:04] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:45:05] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:45:06] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:45:06] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:45:07] "GET /static/css/dashboard_system.css HTTP/1.1" 304 -
+127.0.0.1 - - [20/Jan/2026 19:45:08] "GET /static/css/dashboard_system.css HTTP/1.1" 304 -
+127.0.0.1 - - [20/Jan/2026 19:45:08] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [20/Jan/2026 19:45:11] "GET /switch-view/patient HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:45:11] "GET /dashboard/patient HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:45:13] "GET /static/css/dashboard_system.css HTTP/1.1" 304 -
+127.0.0.1 - - [20/Jan/2026 19:46:33] "GET / HTTP/1.1" 302 -
+127.0.0.1 - - [20/Jan/2026 19:46:34] "GET /dashboard/hospital HTTP/1.1" 200 -
+127.0.0.1 - - [20/Jan/2026 19:46:35] "GET /static/css/dashboard_system.css HTTP/1.1" 304 -

@@ -1,0 +1,187 @@
+from flask import Flask, render_template, request, redirect, url_for, flash
+import mysql.connector
+from mysql.connector import Error
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'your-secret-key-change-this'
+
+# Database Configuration
+DB_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'your_password',  # Change this to your MySQL password
+    'database': 'mediflow'
+}
+
+def get_db():
+    """Create database connection"""
+    try:
+        connection = mysql.connector.connect(**DB_CONFIG)
+        return connection
+    except Error as e:
+        print(f"Database error: {e}")
+        return None
+
+@app.route('/')
+def index():
+    """Dashboard route"""
+    db = get_db()
+    if not db:
+        flash('Database connection failed', 'error')
+        return render_template('dashboard.html', 
+                             patients_today=0,
+                             in_queue=0,
+                             occupied_beds=0,
+                             total_beds=100,
+                             recent_patients=[])
+    
+    try:
+        cursor = db.cursor(dictionary=True)
+        
+        # Get patients today
+        cursor.execute("""
+            SELECT COUNT(*) as today 
+            FROM patients 
+            WHERE DATE(created_at) = CURDATE()
+        """)
+        patients_today = cursor.fetchone()['today']
+        
+        # Get total queue
+        cursor.execute("SELECT COUNT(*) as total FROM patients WHERE status = 'Waiting'")
+        in_queue = cursor.fetchone()['total']
+        
+        # Get recent patients
+        cursor.execute("""
+            SELECT id, name, department, 
+                   COALESCE(status, 'Waiting') as status,
+                   created_at
+            FROM patients 
+            ORDER BY created_at DESC 
+            LIMIT 5
+        """)
+        recent_patients = cursor.fetchall()
+        
+        cursor.close()
+        db.close()
+        
+        return render_template('dashboard.html',
+                             patients_today=patients_today,
+                             in_queue=in_queue,
+                             occupied_beds=9,
+                             total_beds=20,
+                             recent_patients=recent_patients)
+    
+    except Error as e:
+        print(f"Query error: {e}")
+        flash('Error fetching data', 'error')
+        return render_template('dashboard.html',
+                             patients_today=0,
+                             in_queue=0,
+                             occupied_beds=0,
+                             total_beds=100,
+                             recent_patients=[])
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Patient registration"""
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        age = request.form.get('age', '').strip()
+        department = request.form.get('department', '').strip()
+        
+        if not name or not age or not department:
+            flash('All fields are required!', 'error')
+            return render_template('register.html')
+        
+        try:
+            age = int(age)
+            if age <= 0 or age > 150:
+                flash('Invalid age', 'error')
+                return render_template('register.html')
+        except ValueError:
+            flash('Age must be a number', 'error')
+            return render_template('register.html')
+        
+        db = get_db()
+        if not db:
+            flash('Database connection failed', 'error')
+            return render_template('register.html')
+        
+        try:
+            cursor = db.cursor()
+            query = """
+                INSERT INTO patients (name, age, department, status, created_at) 
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, (name, age, department, 'Waiting', datetime.now()))
+            db.commit()
+            cursor.close()
+            db.close()
+            
+            flash(f'Patient {name} registered successfully!', 'success')
+            return redirect(url_for('index'))
+        
+        except Error as e:
+            print(f"Insert error: {e}")
+            flash('Error registering patient', 'error')
+            if db:
+                db.close()
+            return render_template('register.html')
+    
+    return render_template('register.html')
+
+@app.route('/opd-queue')
+def opd_queue():
+    """OPD Queue page"""
+    db = get_db()
+    if not db:
+        flash('Database connection failed', 'error')
+        return render_template('opd_queue.html', patients=[])
+    
+    try:
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT id, name, age, department, status, created_at
+            FROM patients 
+            WHERE DATE(created_at) = CURDATE()
+            ORDER BY created_at ASC
+        """)
+        patients = cursor.fetchall()
+        cursor.close()
+        db.close()
+        
+        return render_template('opd_queue.html', patients=patients)
+    
+    except Error as e:
+        print(f"Query error: {e}")
+        flash('Error fetching queue', 'error')
+        return render_template('opd_queue.html', patients=[])
+
+@app.route('/beds')
+def beds():
+    """Bed Management page"""
+    return render_template('beds.html')
+
+@app.route('/dashboard-modern')
+def dashboard_modern():
+    """Modern Dashboard"""
+    return render_template('dashboard_modern.html')
+
+@app.route('/bed-management')
+def bed_management():
+    """Bed Management Modern"""
+    return render_template('bed_management.html')
+
+@app.errorhandler(404)
+def not_found(error):
+    """Handle 404 errors"""
+    return "<h1>404 - Page Not Found</h1>", 404
+
+@app.errorhandler(500)
+def server_error(error):
+    """Handle 500 errors"""
+    return "<h1>500 - Server Error</h1>", 500
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

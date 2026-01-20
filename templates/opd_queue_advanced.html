@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Advanced OPD Queue Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-home {
+            text-decoration: none;
+            background: #667eea;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-home:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2em;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid;
+        }
+
+        .stat-card.waiting {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .stat-card.consulting {
+            background: #cfe2ff;
+            border-color: #0d6efd;
+        }
+
+        .stat-card.completed {
+            background: #d1e7dd;
+            border-color: #198754;
+        }
+
+        .stat-card.total {
+            background: #e2e3e5;
+            border-color: #6c757d;
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .control-group select,
+        .control-group input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-refresh {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-self: flex-end;
+        }
+
+        .btn-refresh:hover {
+            background: #138496;
+            transform: scale(1.05);
+        }
+
+        .queue-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .queue-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .queue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .patient-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .patient-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .patient-card.waiting {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffecb5 100%);
+        }
+
+        .patient-card.consulting {
+            border-color: #0d6efd;
+            background: linear-gradient(135deg, #cfe2ff 0%, #b6d4fe 100%);
+        }
+
+        .patient-card.completed {
+            border-color: #198754;
+            background: linear-gradient(135deg, #d1e7dd 0%, #badbcc 100%);
+            opacity: 0.7;
+        }
+
+        .token-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .status-badge.waiting {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-badge.consulting {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .status-badge.completed {
+            background: #198754;
+            color: white;
+        }
+
+        .patient-info {
+            margin: 10px 0;
+        }
+
+        .patient-info h3 {
+            color: #333;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+        }
+
+        .patient-info p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .patient-info .icon {
+            margin-right: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .btn-start {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #0b5ed7;
+            transform: scale(1.05);
+        }
+
+        .btn-complete {
+            background: #198754;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #157347;
+            transform: scale(1.05);
+        }
+
+        .btn-skip {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-skip:hover {
+            background: #5c636a;
+        }
+
+        .btn-admit {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .btn-admit:hover {
+            background: #dc6502;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert.success {
+            background: #d1e7dd;
+            border: 1px solid #badbcc;
+            color: #0f5132;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            border: 1px solid #f5c2c7;
+            color: #842029;
+        }
+
+        .alert.info {
+            background: #cff4fc;
+            border: 1px solid #b6effb;
+            color: #055160;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .time-info {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .queue-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-row {
+                flex-direction: column;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-top">
+                <div class="header-left">
+                    <a href="/" class="btn-home">← Home</a>
+                    <h1>🏥 Advanced OPD Queue Management</h1>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-card total">
+                    <h3 id="totalPatients">0</h3>
+                    <p>Total Today</p>
+                </div>
+                <div class="stat-card waiting">
+                    <h3 id="waitingCount">0</h3>
+                    <p>⏳ Waiting</p>
+                </div>
+                <div class="stat-card consulting">
+                    <h3 id="consultingCount">0</h3>
+                    <p>👨‍⚕️ In Consultation</p>
+                </div>
+                <div class="stat-card completed">
+                    <h3 id="completedCount">0</h3>
+                    <p>✅ Completed</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="control-group">
+                <label for="departmentFilter">🏥 Department</label>
+                <select id="departmentFilter" onchange="loadQueue()">
+                    <option value="All Departments">All Departments</option>
+                    <option value="General Medicine">General Medicine</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Orthopedics">Orthopedics</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="Dermatology">Dermatology</option>
+                    <option value="ENT">ENT</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="statusFilter">📊 Status Filter</label>
+                <select id="statusFilter" onchange="filterPatients()">
+                    <option value="all">All Patients</option>
+                    <option value="Waiting">Waiting Only</option>
+                    <option value="In Consultation">In Consultation Only</option>
+                    <option value="Completed">Completed Only</option>
+                </select>
+            </div>
+            <button class="btn-refresh" onclick="loadQueue()">🔄 Refresh Queue</button>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Queue Section -->
+        <div class="queue-section">
+            <h2>📋 Patient Queue</h2>
+            <div class="queue-grid" id="queueGrid">
+                <div class="empty-state">
+                    <div class="icon">⏳</div>
+                    <h3>Loading queue...</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allPatients = [];
+        let currentDepartment = 'All Departments';
+        let currentStatusFilter = 'all';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadQueue();
+            setInterval(loadQueue, 30000); // Auto-refresh every 30 seconds
+        });
+
+        function loadQueue() {
+            currentDepartment = document.getElementById('departmentFilter').value;
+            
+            fetch(`/api/opd-queue?department=${encodeURIComponent(currentDepartment)}`)
+                .then(response => response.json())
+                .then(data => {
+                    allPatients = data.patients || [];
+                    updateStats(data.counts);
+                    filterPatients();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Failed to load queue data', 'error');
+                });
+        }
+
+        function filterPatients() {
+            currentStatusFilter = document.getElementById('statusFilter').value;
+            
+            let filtered = allPatients;
+            if (currentStatusFilter !== 'all') {
+                filtered = allPatients.filter(p => p.status === currentStatusFilter);
+            }
+            
+            displayQueue(filtered);
+        }
+
+        function displayQueue(patients) {
+            const grid = document.getElementById('queueGrid');
+            grid.innerHTML = '';
+
+            if (patients.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <h3>No patients in queue</h3>
+                        <p>Queue is empty for the selected filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            patients.forEach(patient => {
+                const card = createPatientCard(patient);
+                grid.appendChild(card);
+            });
+        }
+
+        function createPatientCard(patient) {
+            const card = document.createElement('div');
+            const statusClass = patient.status.toLowerCase().replace(' ', '-');
+            card.className = `patient-card ${statusClass}`;
+
+            let statusBadge = '';
+            let actionButtons = '';
+
+            if (patient.status === 'Waiting') {
+                statusBadge = '<span class="status-badge waiting">⏳ Waiting</span>';
+                actionButtons = `
+                    <div class="action-buttons">
+                        <button class="btn btn-start" onclick="startConsultation(${patient.id}, '${patient.name}')">
+                            Start Consult
+                        </button>
+                        <button class="btn btn-skip" onclick="cancelConsultation(${patient.id}, '${patient.name}')">
+                            Cancel
+                        </button>
+                    </div>
+                `;
+            } else if (patient.status === 'In Consultation') {
+                statusBadge = '<span class="status-badge consulting">👨‍⚕️ In Consultation</span>';
+                actionButtons = `
+                    <div class="action-buttons">
+                        <button class="btn btn-complete" onclick="completeConsultation(${patient.id}, '${patient.name}')">
+                            ✓ Complete
+                        </button>
+                        <button class="btn btn-admit" onclick="admitPatient(${patient.id}, '${patient.name}')">
+                            Admit
+                        </button>
+                        <button class="btn btn-skip" onclick="cancelConsultation(${patient.id}, '${patient.name}')">
+                            Cancel
+                        </button>
+                    </div>
+                `;
+            } else if (patient.status === 'Completed') {
+                statusBadge = '<span class="status-badge completed">✅ Completed</span>';
+                actionButtons = `
+                    <div class="action-buttons">
+                        <button class="btn btn-admit" onclick="dischargePatient(${patient.id}, '${patient.name}')">
+                            Discharge
+                        </button>
+                    </div>
+                `;
+            }
+
+            const createdDate = new Date(patient.created_at);
+            const timeAgo = getTimeAgo(createdDate);
+
+            card.innerHTML = `
+                <div class="token-badge">Token: ${patient.token_id || patient.id}</div>
+                ${statusBadge}
+                <div class="patient-info">
+                    <h3>👤 ${patient.name}</h3>
+                    <p><span class="icon">🎂</span>Age: ${patient.age} years</p>
+                    <p><span class="icon">🏥</span>Department: ${patient.department || 'N/A'}</p>
+                    ${patient.assigned_doctor ? `<p><span class="icon">👨‍⚕️</span>Doctor: ${patient.assigned_doctor}</p>` : ''}
+                    <div class="time-info">⏰ Registered: ${timeAgo}</div>
+                </div>
+                ${actionButtons}
+            `;
+
+            return card;
+        }
+
+        function startConsultation(patientId, patientName) {
+            if (!confirm(`Start consultation for ${patientName}?`)) return;
+
+            fetch(`/start-consultation/${patientId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(`✅ Consultation started for ${patientName}`, 'success');
+                    loadQueue();
+                } else {
+                    showAlert('❌ Failed to start consultation', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('❌ Failed to start consultation', 'error');
+            });
+        }
+
+        function completeConsultation(patientId, patientName) {
+            if (!confirm(`Mark consultation as complete for ${patientName}?`)) return;
+
+            fetch(`/complete-consultation/${patientId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(`✅ Consultation completed for ${patientName}`, 'success');
+                    loadQueue();
+                } else {
+                    showAlert('❌ Failed to complete consultation', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('❌ Failed to complete consultation', 'error');
+            });
+        }
+
+        function skipPatient(patientId) {
+            // Move patient to end of queue (future enhancement)
+            showAlert('⚠️ Skip feature coming soon', 'info');
+        }
+
+        function admitPatient(patientId, patientName) {
+            if (confirm(`Admit ${patientName} to hospital?`)) {
+                // Redirect to bed assignment with patient context
+                window.location.href = `/assign-bed/${patientId}`;
+            }
+        }
+
+        function cancelConsultation(patientId, patientName) {
+            if (!confirm(`Cancel consultation for ${patientName}?`)) return;
+
+            fetch('/cancel-consultation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ patient_id: patientId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showAlert(`✅ Consultation cancelled for ${patientName}`, 'success');
+                    loadQueue();
+                } else {
+                    showAlert(data.message || '❌ Failed to cancel consultation', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('❌ Failed to cancel consultation', 'error');
+            });
+        }
+
+        function dischargePatient(patientId, patientName) {
+            if (!confirm(`Discharge ${patientName}?`)) return;
+
+            fetch('/discharge-patient', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ patient_id: patientId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showAlert(`✅ Discharged ${patientName}`, 'success');
+                    loadQueue();
+                } else {
+                    showAlert(data.message || '❌ Failed to discharge patient', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('❌ Failed to discharge patient', 'error');
+            });
+        }
+
+        function updateStats(counts) {
+            document.getElementById('totalPatients').textContent = allPatients.length;
+            document.getElementById('waitingCount').textContent = counts?.waiting || 0;
+            document.getElementById('consultingCount').textContent = counts?.in_consultation || 0;
+            document.getElementById('completedCount').textContent = counts?.completed || 0;
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+            container.innerHTML = '';
+            container.appendChild(alert);
+
+            setTimeout(() => {
+                if (container.contains(alert)) {
+                    container.removeChild(alert);
+                }
+            }, 5000);
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return `${seconds}s ago`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return date.toLocaleDateString();
+        }
+    </script>
+</body>
+</html>

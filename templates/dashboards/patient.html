@@ -1,0 +1,154 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Patient Dashboard - MediFlow{% endblock %}
+
+{% block page_title %}Patient Dashboard{% endblock %}
+{% block page_subtitle %}View your health information and hospital statistics{% endblock %}
+
+{% block content %}
+<div class="patient-view-container">
+    
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="banner-icon">👋</div>
+        <div class="banner-content">
+            <h2>Welcome to MediFlow Patient Portal</h2>
+            <p>Track your appointments, view hospital status, and manage your health information</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+        <h3 class="section-title">Quick Actions</h3>
+        <div class="quick-actions-grid">
+            <a href="{{ url_for('patient_registration') }}" class="quick-action-card">
+                <div class="action-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <h4>Book Appointment</h4>
+                <p>Schedule your visit</p>
+            </a>
+
+            <a href="{{ url_for('opd_queue') }}" class="quick-action-card">
+                <div class="action-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h4>Check Queue Status</h4>
+                <p>View waiting time</p>
+            </a>
+
+            <a href="{{ url_for('bed_management') }}" class="quick-action-card">
+                <div class="action-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <h4>Bed Availability</h4>
+                <p>Check bed status</p>
+            </a>
+
+            <a href="{{ url_for('switch_view', view='hospital') }}" class="quick-action-card highlight">
+                <div class="action-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                <h4>Hospital Dashboard</h4>
+                <p>Access full portal</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Hospital Statistics -->
+    <div class="hospital-stats-section">
+        <h3 class="section-title">Hospital Statistics</h3>
+        <div class="stats-grid patient-stats">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h4>Patients Today</h4>
+                    <p class="stat-number">{{ patients_today }}</p>
+                    <span class="stat-label">Registered</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon yellow">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="stat-info">
+                    <h4>In Queue</h4>
+                    <p class="stat-number">{{ in_queue }}</p>
+                    <span class="stat-label">Waiting</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-procedures"></i>
+                </div>
+                <div class="stat-info">
+                    <h4>Occupied Beds</h4>
+                    <p class="stat-number">{{ occupied_beds }}</p>
+                    <span class="stat-label">Out of {{ total_beds }}</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                <div class="stat-info">
+                    <h4>Available Beds</h4>
+                    <p class="stat-number">{{ total_beds - occupied_beds }}</p>
+                    <span class="stat-label">Ready</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Information Cards -->
+    <div class="info-cards-section">
+        <div class="info-card primary">
+            <div class="info-card-header">
+                <i class="fas fa-info-circle"></i>
+                <h4>Hospital Information</h4>
+            </div>
+            <div class="info-card-body">
+                <p><strong>Emergency:</strong> Available 24/7</p>
+                <p><strong>OPD Hours:</strong> 8:00 AM - 8:00 PM</p>
+                <p><strong>Visiting Hours:</strong> 10:00 AM - 6:00 PM</p>
+            </div>
+        </div>
+
+        <div class="info-card secondary">
+            <div class="info-card-header">
+                <i class="fas fa-user-md"></i>
+                <h4>Departments Available</h4>
+            </div>
+            <div class="info-card-body">
+                <ul class="department-list">
+                    <li>General Medicine</li>
+                    <li>Cardiology</li>
+                    <li>Orthopedics</li>
+                    <li>Pediatrics</li>
+                    <li>Neurology</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="info-card accent">
+            <div class="info-card-header">
+                <i class="fas fa-bell"></i>
+                <h4>Need Full Access?</h4>
+            </div>
+            <div class="info-card-body">
+                <p>Access the complete hospital management dashboard with advanced features and detailed reports.</p>
+                <a href="{{ url_for('switch_view', view='hospital') }}" class="info-card-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    Open Hospital Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

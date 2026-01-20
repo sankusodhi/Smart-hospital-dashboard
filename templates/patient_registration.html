@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration - MediFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .registration-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 650px;
+            padding: 48px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header-logo {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #94a3b8;
+        }
+
+        select option[value=""] {
+            color: #94a3b8;
+        }
+
+        /* Blood Group specific styling */
+        #blood_group {
+            font-weight: 600;
+        }
+
+        #blood_group option:not([value=""]) {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 20px;
+        }
+
+        .footer-text a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .required-note {
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 28px;
+            margin-bottom: 16px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        @media (max-width: 600px) {
+            .registration-container {
+                padding: 32px 24px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .form-row,
+            .form-row.three {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="registration-container">
+        <div class="header">
+            <a href="/" style="position: absolute; top: 20px; left: 20px; text-decoration: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 14px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                ← Home
+            </a>
+            <div class="header-logo">🏥</div>
+            <h1>MediFlow</h1>
+            <p>Patient Registration</p>
+        </div>
+
+        <div class="required-note">
+            All fields marked with <span class="required">*</span> are required
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/patient-registration">
+            
+            <!-- SECTION: BASIC INFORMATION -->
+            <div class="section-title">Basic Information</div>
+
+            <!-- Name Field -->
+            <div class="form-group form-row full">
+                <label for="name">Full Name <span class="required">*</span></label>
+                <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+            </div>
+
+            <!-- Age Field -->
+            <div class="form-group form-row">
+                <div>
+                    <label for="age">Age <span class="required">*</span></label>
+                    <input type="number" id="age" name="age" placeholder="25" min="1" max="150" required>
+                </div>
+                <div>
+                    <label for="gender">Gender <span class="required">*</span></label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Blood Group & Date of Birth -->
+            <div class="form-group form-row">
+                <div>
+                    <label for="blood_group">🩸 Blood Group</label>
+                    <select id="blood_group" name="blood_group">
+                        <option value="">Select Blood Group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="date_of_birth">📅 Date of Birth</label>
+                    <input type="date" id="date_of_birth" name="date_of_birth">
+                </div>
+            </div>
+
+            <!-- Department Field -->
+            <div class="form-group form-row full">
+                <label for="department">Department <span class="required">*</span></label>
+                <select id="department" name="department" required>
+                    <option value="">Select Department</option>
+                    <option value="ICU">ICU (Intensive Care Unit)</option>
+                    <option value="General Ward">General Ward</option>
+                    <option value="Semi-Private">Semi-Private</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Orthopedics">Orthopedics</option>
+                    <option value="Neurology">Neurology</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="OPD">OPD (Out Patient Department)</option>
+                    <option value="Emergency">Emergency</option>
+                </select>
+            </div>
+
+            <!-- SECTION: CONTACT INFORMATION -->
+            <div class="section-title">Contact Information</div>
+
+            <!-- Phone & Emergency Contact -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="phone">📱 Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210" required>
+                </div>
+                <div class="form-group">
+                    <label for="emergency_contact">🆘 Emergency Contact</label>
+                    <input type="tel" id="emergency_contact" name="emergency_contact" placeholder="+91 98765 43210">
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-row full">
+                <div class="form-group">
+                    <label for="email">📧 Email</label>
+                    <input type="email" id="email" name="email" placeholder="john.doe@example.com">
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div class="form-group form-row full">
+                <label for="address">🏠 Address</label>
+                <textarea id="address" name="address" placeholder="Enter your complete address"></textarea>
+            </div>
+
+            <!-- SECTION: MEDICAL INFORMATION -->
+            <div class="section-title">Medical Information</div>
+
+            <!-- Medical History -->
+            <div class="form-group form-row full">
+                <label for="medical_history">🏥 Medical History (if any)</label>
+                <textarea id="medical_history" name="medical_history" placeholder="Enter any relevant medical history, allergies, current medications..."></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn">📋 Register & Get Token</button>
+
+            <div class="footer-text">
+                Already registered? <a href="/">Go to Home</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,376 @@
+{% extends 'layouts/base.html' %}
+{% block title %}OPD Queue - MediFlow{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/opd_queue.css') }}">
+{% endblock %}
+
+{% block page_title %}OPD Queue{% endblock %}
+{% block page_subtitle %}{{ selected_department }} • {{ doctor_name }}{% endblock %}
+
+{% block content %}
+    <div class="opd-controls" style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px;">
+        <div class="dept-select-wrap" style="max-width:320px;flex:1;">
+            <label for="deptSelect">Department</label>
+            <select id="deptSelect">
+                <option {% if selected_department == 'All Departments' %}selected{% endif %}>All Departments</option>
+                <option {% if selected_department == 'General Medicine' %}selected{% endif %}>General Medicine</option>
+                <option {% if selected_department == 'Cardiology' %}selected{% endif %}>Cardiology</option>
+                <option {% if selected_department == 'Orthopedics' %}selected{% endif %}>Orthopedics</option>
+                <option {% if selected_department == 'Pediatrics' %}selected{% endif %}>Pediatrics</option>
+            </select>
+        </div>
+        <div class="header-right">
+            <div class="status-badge badge-orange">
+                <span class="badge-dot"></span>
+                <span><span id="countWaiting">0</span> Waiting</span>
+            </div>
+            <div class="status-badge badge-blue">
+                <span class="badge-dot"></span>
+                <span><span id="countInConsult">0</span> In Consultation</span>
+            </div>
+            <div class="status-badge badge-green">
+                <span class="badge-dot"></span>
+                <span><span id="countCompleted">0</span> Completed</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="queue-container" id="queueContainer"></div>
+
+    <!-- Modal for Confirmation -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Confirm Action</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-confirm" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+        function toggleRoleMenu() {
+            const roleMenu = document.getElementById('roleMenu');
+            roleMenu.classList.toggle('show');
+        }
+
+        document.addEventListener('click', function(event) {
+            const roleCard = document.querySelector('.role-card');
+            const roleMenu = document.getElementById('roleMenu');
+            
+            if (roleCard && !roleCard.contains(event.target)) {
+                if (roleMenu) {
+                    roleMenu.classList.remove('show');
+                }
+            }
+        });
+
+        function startConsultation(patientId, patientName) {
+            showModal(
+                'Start Consultation',
+                `Start consultation with <strong>${patientName}</strong>?`,
+                async () => {
+                    try {
+                        const response = await fetch(`/start-consultation/${patientId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            updatePatientStatus(patientId, 'In Consultation');
+                            updateButtonsForPatient(patientId);
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error starting consultation');
+                    }
+                }
+            );
+        }
+
+        function completePatient(patientId, patientName) {
+            showModal(
+                'Complete Consultation',
+                `Mark <strong>${patientName}</strong>'s consultation as complete?`,
+                async () => {
+                    try {
+                        const response = await fetch(`/complete-consultation/${patientId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            updatePatientStatus(patientId, 'Completed');
+                            updateButtonsForPatient(patientId);
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error completing consultation');
+                    }
+                }
+            );
+        }
+
+        function admitPatient(patientId, patientName) {
+            showModal(
+                'Admit Patient to Bed',
+                `Admit <strong>${patientName}</strong> to hospital bed?<br><small style="color: #666;">An available bed will be assigned automatically.</small>`,
+                async () => {
+                    try {
+                        const response = await fetch(`/admit-patient/${patientId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Show success with bed details
+                            showBedAssignmentModal(patientName, data.bed_number, data.ward_name, patientId);
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error admitting patient');
+                    }
+                }
+            );
+        }
+
+        function showModal(title, message, onConfirm) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').innerHTML = message;
+            
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.onclick = () => {
+                onConfirm();
+                closeModal();
+            };
+            
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function showBedAssignmentModal(patientName, bedNumber, wardName, patientId) {
+            document.getElementById('modalTitle').textContent = '✓ Bed Assigned Successfully';
+            document.getElementById('modalMessage').innerHTML = `
+                <div style="text-align: center; padding: 20px 0;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🛏️</div>
+                    <h3 style="color: #2e7d32; margin-bottom: 15px;">${patientName}</h3>
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                        <div style="margin-bottom: 15px;">
+                            <div style="font-size: 12px; color: #666; text-transform: uppercase;">Bed Number</div>
+                            <div style="font-size: 28px; font-weight: 700; color: #2196f3;">${bedNumber}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #666; text-transform: uppercase;">Ward</div>
+                            <div style="font-size: 16px; font-weight: 600; color: #1a1f3a;">${wardName}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.textContent = 'Done';
+            confirmBtn.onclick = () => {
+                updatePatientStatus(patientId, 'Admitted');
+                updateButtonsForPatient(patientId);
+                closeModal();
+                location.reload();
+            };
+            
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        function updatePatientStatus(patientId, newStatus) {
+            const statusElement = document.getElementById(`status-${patientId}`);
+            const cardElement = document.getElementById(`patient-${patientId}`);
+            
+            if (statusElement) {
+                statusElement.textContent = newStatus;
+                statusElement.className = `status-badge-pill status-${newStatus.toLowerCase().replace(' ', '-')}`;
+            }
+            
+            if (cardElement) {
+                cardElement.className = `patient-card ${newStatus.toLowerCase().replace(' ', '-')}`;
+            }
+        }
+
+        function updateButtonsForPatient(patientId) {
+            const actionsContainer = document.getElementById(`actions-${patientId}`);
+            const statusElement = document.getElementById(`status-${patientId}`);
+            
+            if (!actionsContainer) return;
+            
+            const currentStatus = statusElement.textContent.trim();
+            
+            if (currentStatus === 'In Consultation') {
+                actionsContainer.innerHTML = `
+                    <button class="btn btn-complete" onclick="completePatient(${patientId}, '${getPatientName(patientId)}')">✓ Complete</button>
+                    <button class="btn btn-admit" onclick="admitPatient(${patientId}, '${getPatientName(patientId)}')">🛏 Admit</button>
+                `;
+            } else if (currentStatus === 'Completed') {
+                actionsContainer.innerHTML = `
+                    <span class="completed-message">✓ Consultation Completed</span>
+                `;
+            } else if (currentStatus === 'Admitted') {
+                actionsContainer.innerHTML = `
+                    <span class="admitted-message">✓ Patient Admitted</span>
+                `;
+            }
+        }
+
+        function getPatientName(patientId) {
+            const card = document.getElementById(`patient-${patientId}`);
+            if (card) {
+                const nameElement = card.querySelector('.patient-name');
+                return nameElement ? nameElement.textContent : 'Patient';
+            }
+            return 'Patient';
+        }
+
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('confirmModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+    <script>
+        async function loadQueue() {
+            const deptSelect = document.getElementById('deptSelect');
+            const selected = deptSelect ? deptSelect.value : 'All Departments';
+            const res = await fetch(`/api/opd-queue?department=${encodeURIComponent(selected)}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            document.getElementById('countWaiting').textContent = data.counts.waiting;
+            document.getElementById('countInConsult').textContent = data.counts.in_consultation;
+            document.getElementById('countCompleted').textContent = data.counts.completed;
+            renderCards(data.patients || []);
+        }
+
+        function renderCards(list) {
+            const wrap = document.getElementById('queueContainer');
+            wrap.innerHTML = '';
+            if (!list.length) {
+                wrap.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <h2>No Patients in Queue</h2>
+                    <p>All patients have been processed or no patients are registered yet.</p>
+                    <a href="{{ url_for('patient_registration') }}" class="btn btn-primary">Register Patient</a>
+                </div>`;
+                return;
+            }
+
+            list.forEach(p => {
+                const statusClass = p.status === 'In Consultation' ? 'status-in-consultation' : (p.status === 'Completed' ? 'status-completed' : (p.status === 'Admitted' ? 'status-admitted' : 'status-waiting'));
+                const cardClass = p.status === 'In Consultation' ? 'in-consultation' : (p.status === 'Completed' ? 'completed' : (p.status === 'Admitted' ? 'admitted' : 'waiting'));
+                const div = document.createElement('div');
+                div.className = `patient-card ${cardClass}`;
+                div.id = `patient-${p.id}`;
+                const registered = p.created_at ? new Date(p.created_at) : null;
+                const regTime = registered ? registered.toLocaleString() : '';
+                div.innerHTML = `
+                    <div class="patient-header">
+                        <div class="token-badge">${p.token_id ?? '-'}</div>
+                        <div class="patient-title">
+                            <div class="patient-name">${p.name || ''} <span style="color:#64748b;font-weight:600;">• ${p.age ? p.age + 'y' : ''}</span></div>
+                            <div class="patient-status">
+                                <span class="status-badge-pill ${statusClass}" id="status-${p.id}">${p.status || ''}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="patient-info">
+                        <div class="info-item">
+                            <div class="info-label">Department</div>
+                            <div class="info-value">${p.department || ''}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Registered</div>
+                            <div class="info-value">${regTime}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Assigned Doctor</div>
+                            <div class="info-value">${p.assigned_doctor || 'Not assigned'}</div>
+                        </div>
+                    </div>
+                    <div class="symptoms"><strong>Symptoms:</strong> ${p.symptoms || 'Not specified'}</div>
+                    <div class="action-buttons" id="actions-${p.id}">
+                        ${p.status === 'Waiting' ? `
+                            <button class="btn btn-start" onclick="startConsultation(${p.id}, '${(p.name || '').replace(/'/g, "\'")}')"><i class=\"fa-solid fa-play\"></i> Start</button>
+                        ` : p.status === 'In Consultation' ? `
+                            <button class="btn btn-complete" onclick="completePatient(${p.id}, '${(p.name || '').replace(/'/g, "\'")}')"><i class=\"fa-solid fa-check\"></i> Complete</button>
+                            <button class="btn btn-admit" onclick="admitPatient(${p.id}, '${(p.name || '').replace(/'/g, "\'")}')"><i class=\"fa-solid fa-bed\"></i> Admit</button>
+                        ` : p.status === 'Completed' ? `
+                            <span class="completed-message">✓ Consultation Completed</span>
+                        ` : p.status === 'Admitted' ? `
+                            <span class="admitted-message">✓ Patient Admitted to Bed</span>
+                        ` : ''}
+                    </div>
+                `;
+                wrap.appendChild(div);
+            });
+        }
+
+        document.getElementById('deptSelect')?.addEventListener('change', (e) => {
+            const dept = e.target.value;
+            document.getElementById('headerDept').textContent = dept;
+            const url = new URL(window.location.href);
+            url.searchParams.set('dept', dept);
+            history.replaceState(null, '', url.toString());
+            loadQueue();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadQueue();
+            setInterval(loadQueue, 10000);
+            
+            // Load hospital dashboard stats for Doctor View
+            {% if role == 'Doctor View' %}
+            loadDashboardStats();
+            setInterval(loadDashboardStats, 15000);  // Refresh every 15 seconds
+            {% endif %}
+        });
+
+        // Function to load hospital dashboard stats
+        async function loadDashboardStats() {
+            try {
+                const res = await fetch('/api/dashboard-summary');
+                if (!res.ok) return;
+                const data = await res.json();
+                
+                // Update the dashboard stats in sidebar
+                document.getElementById('patientsTodayCount').textContent = data.patients_today || 0;
+                document.getElementById('inQueueCount').textContent = data.in_queue || 0;
+                document.getElementById('bedOccupancyCount').textContent = data.occupied_beds || 0;
+                document.getElementById('occupancyPercent').textContent = (data.occupancy_percent || 0) + '%';
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+    </script>
+{% endblock %}

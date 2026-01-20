@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hospital Dashboard - MediFlow</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f5f7fb; color: #1f2937; }
+        .layout { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar { width: 300px; background: linear-gradient(180deg, #0f172a 0%, #0b1020 100%); color: #fff; display: flex; flex-direction: column; box-shadow: 4px 0 16px rgba(0,0,0,0.2); }
+        .brand { padding: 28px 22px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .brand h2 { font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #67e8f9 0%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand p { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+
+        .profile { display: flex; align-items: center; gap: 14px; padding: 18px 22px; }
+        .avatar { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #22d3ee, #818cf8); display: grid; place-items: center; font-weight: 800; }
+        .profile .name { font-size: 14px; font-weight: 700; }
+        .profile .role { font-size: 12px; color: rgba(255,255,255,0.7); }
+
+        .controls { padding: 0 22px 22px; display: grid; gap: 12px; }
+        .select, .button { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: #fff; font-size: 13px; }
+        .button { cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; }
+        .button:hover { background: rgba(255,255,255,0.1); }
+
+        .nav { flex: 1; padding: 16px 0; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 22px; color: rgba(255,255,255,0.75); text-decoration: none; border-left: 4px solid transparent; transition: .25s; }
+        .nav-item:hover { background: rgba(255,255,255,0.06); color: #67e8f9; }
+        .nav-item.active { border-left-color: #22d3ee; color: #22d3ee; background: rgba(34,211,238,0.08); }
+        .status { padding: 18px 22px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.75); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.45; }
+        }
+
+        /* Main */
+        .main { flex: 1; padding: 36px; }
+        .header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
+        .header-title { font-size: 30px; font-weight: 800; color: #0f172a; }
+        .header-sub { font-size: 13px; color: #64748b; }
+
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .card { background: #ffffff; border-radius: 16px; padding: 18px; box-shadow: 0 6px 20px rgba(2,6,23,0.06); }
+        .card .label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: .6px; font-weight: 700; }
+        .card .value { display: flex; align-items: center; gap: 10px; font-size: 28px; font-weight: 800; color: #0f172a; margin-top: 8px; }
+        .card .icon { color: #22d3ee; }
+
+        .panel { background: #ffffff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 20px rgba(2,6,23,0.06); margin-bottom: 24px; }
+        .panel h3 { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 14px; }
+        .ward { display: grid; grid-template-columns: 160px 1fr 80px; align-items: center; gap: 12px; padding: 10px 0; }
+        .ward-name { font-weight: 700; color: #334155; }
+        .progress { position: relative; height: 12px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+        .bar { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+        .bar.low { background: linear-gradient(90deg, #34d399, #10b981); }
+        .bar.medium { background: linear-gradient(90deg, #f59e0b, #f97316); }
+        .bar.high { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .ward-meta { text-align: right; color: #64748b; font-weight: 700; }
+
+        .table-card { background: #ffffff; border-radius: 16px; padding: 22px; box-shadow: 0 6px 20px rgba(2,6,23,0.06); }
+        .table-card h3 { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f8fafc; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        th { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: .6px; }
+        .badge { padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+        .badge.waiting { background: #fff7ed; color: #9a3412; }
+        .badge.in-consultation { background: #e0f2fe; color: #075985; }
+        .badge.completed { background: #ecfdf5; color: #065f46; }
+        .badge.admitted { background: #f3e5f5; color: #7b1fa2; }
+
+        /* Action Buttons */
+        .actions { display: flex; gap: 8px; }
+        .btn { padding: 8px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all .3s ease; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+        .btn-start { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+        .btn-start:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+        .btn-complete { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+        .btn-complete:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+        .btn-admit { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+        .btn-admit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+        .completed-msg { color: #047857; font-size: 12px; font-weight: 700; }
+        .admitted-msg { color: #7b1fa2; font-size: 12px; font-weight: 700; }
+
+        /* ============ OCCUPIED BEDS SECTION - MODERN DESIGN ============ */
+        .beds-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 6px 20px rgba(2,6,23,0.06);
+            margin-bottom: 24px;
+            border: 1px solid rgba(59,130,246,0.1);
+        }
+        
+        .beds-section h3 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .beds-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .beds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .bed-card-item {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(2,6,23,0.04);
+        }
+
+        .bed-card-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 50%, #10b981 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.35s ease;
+        }
+
+        .bed-card-item:hover {
+            transform: translateY(-6px);
+            border-color: #3b82f6;
+            box-shadow: 0 12px 28px rgba(59,130,246,0.15);
+        }
+
+        .bed-card-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .bed-number {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bed-number i {
+            font-size: 18px;
+            color: #3b82f6;
+        }
+
+        .patient-info {
+            font-size: 15px;
+            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .patient-dept {
+            font-size: 12px;
+            color: #475569;
+            font-weight: 600;
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 6px;
+            margin-top: 0;
+        }
+
+        .bed-action-hint {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-style: italic;
+        }
+
+        .bed-action-hint i {
+            font-size: 11px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #10b981;
+            margin-bottom: 16px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .empty-state div {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); width: 90%; max-width: 400px; animation: slideUp .3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header { padding: 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 20px; font-weight: 700; color: #0f172a; }
+        .modal-close { background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; }
+        .modal-body { padding: 24px; font-size: 15px; color: #475569; }
+        .modal-footer { padding: 20px 24px; border-top: 1px solid #e5e7eb; display: flex; gap: 12px; justify-content: flex-end; }
+        .btn-cancel { background: #f3f4f6; color: #374151; padding: 10px 20px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .btn-confirm { background: #667eea; color: #fff; padding: 10px 20px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        @media (max-width: 1024px) { .stats{grid-template-columns: repeat(2,1fr);} }
+        @media (max-width: 768px) { .layout{flex-direction: column;} .sidebar{width:100%;} .stats{grid-template-columns:1fr;} }
+    </style>
+    <script>
+        function getBarClass(p){ if(p<40) return 'low'; if(p<75) return 'medium'; return 'high'; }
+    </script>
+    </head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <h2>MediFlow</h2>
+                <p>Hospital Management</p>
+            </div>
+            <div class="profile">
+                <div class="avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                <div>
+                    <div class="name">Dr. On Duty</div>
+                    <div class="role">{{ role }}</div>
+                </div>
+            </div>
+            <div class="controls">
+                <select class="select" aria-label="Department">
+                    <option>All Departments</option>
+                    <option>General Medicine</option>
+                    <option>Cardiology</option>
+                    <option>Orthopedics</option>
+                    <option>Pediatrics</option>
+                </select>
+                <a class="button" href="/switch-role?role=Admin/Receptionist"><i class="fa-solid fa-arrows-rotate"></i> Switch Role</a>
+            </div>
+            <nav class="nav">
+                <a href="/hospital-dashboard" class="nav-item active"><i class="fa-solid fa-hospital"></i><span>Hospital Dashboard</span></a>
+                <a href="/patient-registration" class="nav-item"><i class="fa-solid fa-user-plus"></i><span>Patient Registration</span></a>
+                <a href="/opd-queue" class="nav-item"><i class="fa-solid fa-list-check"></i><span>OPD Queue</span></a>
+                <a href="/bed-management" class="nav-item"><i class="fa-solid fa-bed"></i><span>Bed Management</span></a>
+                <a href="/" class="nav-item"><i class="fa-solid fa-house"></i><span>Patient View</span></a>
+            </nav>
+            <div class="status"><div class="dot"></div> System Online</div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="header">
+                <div>
+                    <div class="header-title">Hospital Dashboard</div>
+                    <div class="header-sub">Live overview for staff operations</div>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <section class="stats">
+                <div class="card">
+                    <div class="label">Patients Registered Today</div>
+                    <div class="value"><i class="fa-solid fa-user-plus icon"></i> {{ patients_today }}</div>
+                </div>
+                <div class="card">
+                    <div class="label">Patients in OPD Queue</div>
+                    <div class="value"><i class="fa-solid fa-list-ol icon"></i> {{ in_queue }}</div>
+                </div>
+                <div class="card">
+                    <div class="label">Bed Occupancy Ratio</div>
+                    <div class="value"><i class="fa-solid fa-bed icon"></i> {{ occupancy_percent }}%</div>
+                </div>
+                <div class="card">
+                    <div class="label">Avg. Waiting Time</div>
+                    <div class="value"><i class="fa-solid fa-stopwatch icon"></i> {{ avg_wait_minutes }} mins</div>
+                </div>
+            </section>
+
+            <!-- Bed Utilization Panel -->
+            <section class="panel">
+                <h3>Bed Utilization</h3>
+                {% for ward in ward_utilization %}
+                <div class="ward">
+                    <div class="ward-name">{{ ward.name }}</div>
+                    <div class="progress">
+                        {% set bar_class = 'low' if ward.percent < 40 else ('medium' if ward.percent < 75 else 'high') %}
+                        <div class="bar {{ bar_class }}" style="width: {{ ward.percent }}%;"></div>
+                    </div>
+                    <div class="ward-meta">{{ ward.occupied }}/{{ ward.total }} ({{ ward.percent }}%)</div>
+                </div>
+                {% endfor %}
+            </section>
+
+            <!-- Occupied Beds Section -->
+            <section class="beds-section">
+                <h3><i class="fa-solid fa-hospital-bed" style="color: #3b82f6;"></i>Occupied Beds</h3>
+                <div class="beds-subtitle">Click on any bed to discharge patient</div>
+                {% if admitted_patients %}
+                <div class="beds-grid">
+                    {% for patient in admitted_patients %}
+                    <div class="bed-card-item" data-bed-id="{{ patient.bed_id or 'N/A' }}" data-patient-id="{{ patient.id }}" data-patient-name="{{ patient.name }}">
+                        <div class="bed-number">
+                            <i class="fa-solid fa-bed"></i>
+                            {{ patient.bed_id or 'N/A' }}
+                        </div>
+                        <div class="patient-info">{{ patient.name }}</div>
+                        <div class="patient-dept">{{ patient.department }}</div>
+                        <div class="bed-action-hint">
+                            <i class="fa-solid fa-arrow-pointer"></i>
+                            Click to discharge
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <div>No Occupied Beds</div>
+                    <p>All beds are currently available</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- Recent Patients -->
+            <section class="table-card">
+                <h3>Recent Patients</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Registered</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in recent_patients %}
+                        <tr>
+                            <td>{{ patient.id }}</td>
+                            <td>{{ patient.name }}</td>
+                            <td>{{ patient.created_at|string }}</td>
+                            <td><span class="badge {{ patient.status|lower|replace(' ', '-') }}">{{ patient.status }}</span></td>
+                            <td>
+                                <div class="actions" id="actions-{{ patient.id }}">
+                                    {% if patient.status == 'Waiting' %}
+                                        <button class="btn btn-start" data-action="start" data-patient-id="{{ patient.id }}" data-patient-name="{{ patient.name }}">
+                                            <i class="fa-solid fa-play"></i> Start
+                                        </button>
+                                    {% elif patient.status == 'In Consultation' %}
+                                        <button class="btn btn-complete" data-action="complete" data-patient-id="{{ patient.id }}" data-patient-name="{{ patient.name }}">
+                                            <i class="fa-solid fa-check"></i> Complete
+                                        </button>
+                                        <button class="btn btn-admit" data-action="admit" data-patient-id="{{ patient.id }}" data-patient-name="{{ patient.name }}">
+                                            <i class="fa-solid fa-bed"></i> Admit
+                                        </button>
+                                    {% elif patient.status == 'Completed' %}
+                                        <span class="completed-msg">✓ Completed</span>
+                                    {% elif patient.status == 'Admitted' %}
+                                        <span class="admitted-msg">✓ Admitted</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:#94a3b8;">No patients found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Confirm Action</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-confirm" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startConsultation(patientId, patientName) {
+            showModal(
+                'Start Consultation',
+                `Start consultation with <strong>${patientName}</strong>?`,
+                async () => {
+                    try {
+                        const response = await fetch(`/start-consultation/${patientId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            // Update buttons without page reload
+                            updateActionButtons(patientId, 'In Consultation', patientName);
+                            updateStatusBadge(patientId, 'In Consultation');
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error starting consultation');
+                    }
+                }
+            );
+        }
+
+        function completeConsultation(patientId, patientName) {
+            showModal(
+                'Complete Consultation',
+                `Mark <strong>${patientName}</strong>'s consultation as complete?`,
+                async () => {
+                    try {
+                        const response = await fetch(`/complete-consultation/${patientId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            // Update buttons without page reload
+                            updateActionButtons(patientId, 'Completed', patientName);
+                            updateStatusBadge(patientId, 'Completed');
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error completing consultation');
+                    }
+                }
+            );
+        }
+
+        function admitPatient(patientId, patientName) {
+            showModal(
+                'Admit Patient',
+                `Admit <strong>${patientName}</strong> to hospital bed?`,
+                async () => {
+                    try {
+                        const response = await fetch(`/admit-patient/${patientId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            // Show success message
+                            showSuccessModal(
+                                '✓ Patient Admitted Successfully',
+                                `<div style="text-align: center; padding: 20px 0;">
+                                    <div style="font-size: 48px; margin-bottom: 20px;">🛏️</div>
+                                    <h3 style="color: #2e7d32; margin-bottom: 15px;">${patientName}</h3>
+                                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                                        <div style="margin-bottom: 15px;">
+                                            <div style="font-size: 12px; color: #666; text-transform: uppercase;">Bed Number</div>
+                                            <div style="font-size: 28px; font-weight: 700; color: #2196f3;">${data.bed_number}</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 12px; color: #666; text-transform: uppercase;">Ward</div>
+                                            <div style="font-size: 16px; font-weight: 600; color: #1a1f3a;">${data.ward_name}</div>
+                                        </div>
+                                    </div>
+                                </div>`,
+                                () => {
+                                    // Update buttons after closing success modal
+                                    updateActionButtons(patientId, 'Admitted', patientName);
+                                    updateStatusBadge(patientId, 'Admitted');
+                                }
+                            );
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error admitting patient');
+                    }
+                }
+            );
+        }
+
+        function updateActionButtons(patientId, newStatus, patientName) {
+            const actionsDiv = document.getElementById(`actions-${patientId}`);
+            if (!actionsDiv) return;
+
+            if (newStatus === 'In Consultation') {
+                actionsDiv.innerHTML = `
+                    <button class="btn btn-complete" onclick="completeConsultation(${patientId}, '${patientName}')">
+                        <i class="fa-solid fa-check"></i> Complete
+                    </button>
+                    <button class="btn btn-admit" onclick="admitPatient(${patientId}, '${patientName}')">
+                        <i class="fa-solid fa-bed"></i> Admit
+                    </button>
+                `;
+            } else if (newStatus === 'Completed') {
+                actionsDiv.innerHTML = '<span class="completed-msg">✓ Completed</span>';
+            } else if (newStatus === 'Admitted') {
+                actionsDiv.innerHTML = '<span class="admitted-msg">✓ Admitted</span>';
+            }
+        }
+
+        function updateStatusBadge(patientId, newStatus) {
+            const row = document.getElementById(`actions-${patientId}`).closest('tr');
+            const statusCell = row.cells[3];
+            const badgeClass = newStatus.toLowerCase().replace(' ', '-');
+            statusCell.innerHTML = `<span class="badge ${badgeClass}">${newStatus}</span>`;
+        }
+
+        function showModal(title, message, onConfirm) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').innerHTML = message;
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.onclick = () => {
+                onConfirm();
+                closeModal();
+            };
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function showSuccessModal(title, message, onClose) {
+            document.getElementById('modalTitle').innerHTML = title;
+            document.getElementById('modalMessage').innerHTML = message;
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.textContent = 'Done';
+            confirmBtn.onclick = () => {
+                if (onClose) onClose();
+                confirmBtn.textContent = 'Confirm';
+                closeModal();
+            };
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        // Close modal on backdrop click
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('confirmModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Discharge functions
+        function showDischargeModal(bedNumber, patientName, patientId) {
+            showModal(
+                'Discharge Patient',
+                `<div style="text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">🏥</div>
+                    <p>Discharge <strong>${patientName}</strong> from bed <strong>${bedNumber}</strong>?</p>
+                </div>`,
+                async () => {
+                    try {
+                        const response = await fetch('/discharge-patient/' + patientId, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            showSuccessModal(
+                                '✓ Patient Discharged',
+                                `<div style="text-align: center; padding: 20px 0;">
+                                    <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
+                                    <h3 style="color: #2e7d32;">${patientName} has been discharged</h3>
+                                    <p style="color: #666; margin-top: 10px;">Bed ${bedNumber} is now available</p>
+                                </div>`,
+                                () => {
+                                    location.reload();
+                                }
+                            );
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Error discharging patient');
+                    }
+                }
+            );
+        }
+
+        // Event delegation for buttons and bed cards
+        document.addEventListener('click', function(e) {
+            // Handle action buttons (Start, Complete, Admit)
+            if (e.target.closest('[data-action]')) {
+                const btn = e.target.closest('[data-action]');
+                const action = btn.dataset.action;
+                const patientId = btn.dataset.patientId;
+                const patientName = btn.dataset.patientName;
+                
+                if (action === 'start') startConsultation(parseInt(patientId), patientName);
+                else if (action === 'complete') completeConsultation(parseInt(patientId), patientName);
+                else if (action === 'admit') admitPatient(parseInt(patientId), patientName);
+            }
+            
+            // Handle bed card clicks for discharge
+            if (e.target.closest('.bed-card-item')) {
+                const card = e.target.closest('.bed-card-item');
+                const bedId = card.dataset.bedId;
+                const patientId = card.dataset.patientId;
+                const patientName = card.dataset.patientName;
+                showDischargeModal(bedId, patientName, parseInt(patientId));
+            }
+        });
+    </script>
+</body>
+</html>

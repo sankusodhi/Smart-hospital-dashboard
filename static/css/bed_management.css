@@ -1,0 +1,1335 @@
+/* ================================================
+   GLOBAL STYLES & RESET
+   ================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background-color: #f5f7fb;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+/* ================================================
+   LAYOUT CONTAINER
+   ================================================ */
+
+.app-container {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ================================================
+   SIDEBAR STYLES
+   ================================================ */
+
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #1a1f3a 0%, #16213e 100%);
+    color: white;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #334155;
+    overflow-y: auto;
+    position: relative;
+}
+
+.sidebar-logo {
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sidebar-logo p {
+    font-size: 12px;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Role Card */
+.role-card {
+    margin: 25px 15px;
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.role-card:hover {
+    background-color: #3f4b5e;
+}
+
+.role-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.role-info {
+    flex: 1;
+}
+
+.role-text {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.role-switch {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+}
+
+.role-switch:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 25px 0;
+}
+
+.nav-item {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
+    font-weight: 500;
+    border-left: 4px solid transparent;
+    text-decoration: none;
+}
+
+.nav-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: white;
+}
+
+.nav-item.active {
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    border-left-color: #667eea;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* System Status */
+.sidebar-bottom {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4caf50;
+    margin-right: 10px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ================================================
+   MAIN CONTENT AREA
+   ================================================ */
+
+.main-content {
+    margin-left: 280px;
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px;
+    background-color: #f5f6fa;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header-left h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1f3a;
+    margin-bottom: 8px;
+}
+
+.header-left p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Legend */
+.header-legend {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    background: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1f3a;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-dot.available {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.legend-dot.occupied {
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* ================================================
+   WARD SECTIONS
+   ================================================ */
+
+.ward-section {
+    margin-bottom: 32px;
+    border-radius: 14px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.ward-section:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Ward Color Themes */
+.ward-icu {
+    background: linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%);
+    border-left: 5px solid #ef4444;
+}
+
+.ward-general {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border-left: 5px solid #3b82f6;
+}
+
+.ward-semi {
+    background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
+    border-left: 5px solid #8b5cf6;
+}
+
+/* Ward Header */
+.ward-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+}
+
+.ward-info h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1f3a;
+    margin-bottom: 4px;
+}
+
+.ward-info p {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Availability Badge */
+.availability-badge {
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-icu {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+}
+
+.badge-general {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #1e40af;
+}
+
+.badge-semi {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #6d28d9;
+}
+
+/* ================================================
+   BED GRID
+   ================================================ */
+
+.bed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+/* ================================================
+   BED CARD
+   ================================================ */
+
+.bed-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    min-height: 150px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.bed-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Available Bed */
+.bed-available {
+    border: 3px solid #10b981;
+}
+
+.bed-available:hover {
+    border-color: #059669;
+    background: #f0fdf4;
+}
+
+/* Occupied Bed */
+.bed-occupied {
+    border: 3px solid #ef4444;
+}
+
+.bed-occupied:hover {
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+
+/* Bed Status Dot */
+.bed-status-dot {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bed-status-dot.available {
+    background: #10b981;
+    animation: pulse-green 2s infinite;
+}
+
+.bed-status-dot.occupied {
+    background: #ef4444;
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+}
+
+@keyframes pulse-red {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+}
+
+/* Bed Icon */
+.bed-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+/* Bed ID */
+.bed-id {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1f3a;
+    text-align: center;
+}
+
+/* Patient Name */
+.patient-name {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    font-weight: 500;
+    margin-top: 6px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ================================================
+   RESPONSIVE DESIGN
+   ================================================ */
+
+/* Tablet - 1024px and below */
+@media (max-width: 1024px) {
+    .bed-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 14px;
+    }
+
+    .page-header {
+        flex-direction: column;
+    }
+
+    .header-legend {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Mobile - 768px and below */
+@media (max-width: 768px) {
+    .app-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+
+    .sidebar {
+        grid-column: 1;
+        grid-row: 1;
+        padding: 16px;
+        max-height: 80px;
+        flex-direction: row;
+        overflow-x: auto;
+        border-bottom: 1px solid #334155;
+        border-right: none;
+    }
+
+    .sidebar-logo {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+        min-width: fit-content;
+    }
+
+    .sidebar-nav {
+        flex-direction: row;
+        margin-bottom: 0;
+        gap: 4px;
+    }
+
+    .system-status {
+        display: none;
+    }
+
+    .role-card {
+        display: none;
+    }
+
+    .main-content {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 20px;
+    }
+
+    .page-title {
+        font-size: 24px;
+    }
+
+    .bed-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .bed-card {
+        padding: 16px;
+        min-height: 120px;
+    }
+
+    .bed-icon {
+        font-size: 32px;
+    }
+
+    .ward-section {
+        padding: 20px;
+    }
+}
+
+/* Mobile - 480px and below */
+@media (max-width: 480px) {
+    .main-content {
+        padding: 16px;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+
+    .page-subtitle {
+        font-size: 12px;
+    }
+
+    .bed-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .bed-card {
+        padding: 12px;
+        min-height: 110px;
+    }
+
+    .bed-icon {
+        font-size: 28px;
+    }
+
+    .bed-id {
+        font-size: 12px;
+    }
+
+    .patient-name {
+        font-size: 10px;
+    }
+
+    .ward-section {
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .ward-title {
+        font-size: 16px;
+    }
+
+    .ward-subtitle {
+        font-size: 11px;
+    }
+
+    .availability-badge {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+
+    .header-legend {
+        gap: 12px;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        font-size: 11px;
+    }
+}
+
+/* ================================================
+   SCROLLBAR STYLING
+   ================================================ */
+
+.sidebar::-webkit-scrollbar,
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.main-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ================================================
+   FOCUS STATES FOR ACCESSIBILITY
+   ================================================ */
+
+.nav-item:focus,
+.bed-card:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Add these at the end of the file */
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+.modal-large {
+    max-width: 600px;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1f3a;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+/* Bed Details Modal */
+.bed-details-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.bed-header-info {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    color: white;
+}
+
+.bed-number-large {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.ward-name-large {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.patient-details-section {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.patient-details-section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1f3a;
+    margin-bottom: 15px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #1a1f3a;
+    font-weight: 500;
+    text-align: right;
+}
+
+.empty-bed-message {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 15px;
+}
+
+.empty-bed-message p {
+    font-size: 16px;
+    color: #666;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.btn-discharge {
+    background: #4caf50;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-discharge:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Bed Card Clickable */
+.bed-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bed-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* ==================== GLOBAL STYLES ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #f5f6fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* ==================== MAIN LAYOUT ==================== */
+.container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ==================== SIDEBAR ==================== */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #1a1f3a 0%, #16213e 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+}
+
+/* Sidebar Logo */
+.sidebar-logo {
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-logo h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sidebar-logo p {
+    font-size: 12px;
+    opacity: 0.7;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Role Card */
+.role-card {
+    margin: 25px 15px;
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.role-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.role-info {
+    flex: 1;
+}
+
+.role-text {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.role-switch {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+}
+
+.role-switch:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 25px 0;
+}
+
+.nav-item {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
+    font-weight: 500;
+    border-left: 4px solid transparent;
+    text-decoration: none;
+}
+
+.nav-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: white;
+}
+
+.nav-item.active {
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    border-left-color: #667eea;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* System Status */
+.sidebar-bottom {
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4caf50;
+    margin-right: 10px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ==================== MAIN CONTENT ==================== */
+.main-content {
+    margin-left: 280px;
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px;
+    background-color: #f5f6fa;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header-left h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1f3a;
+    margin-bottom: 8px;
+}
+
+.header-left p {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Legend */
+.header-legend {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    background: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1f3a;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-dot.available {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.legend-dot.occupied {
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* ==================== WARD SECTIONS ==================== */
+.ward-section {
+    margin-bottom: 32px;
+    border-radius: 14px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+}
+
+.ward-section:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Ward Color Themes */
+.ward-icu {
+    background: linear-gradient(135deg, #fef2f2 0%, #fff5f5 100%);
+    border-left: 5px solid #ef4444;
+}
+
+.ward-general {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border-left: 5px solid #3b82f6;
+}
+
+.ward-semi {
+    background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
+    border-left: 5px solid #8b5cf6;
+}
+
+/* Ward Header */
+.ward-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.06);
+}
+
+.ward-info h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1f3a;
+    margin-bottom: 4px;
+}
+
+.ward-info p {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Availability Badge */
+.availability-badge {
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-icu {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+}
+
+.badge-general {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #1e40af;
+}
+
+.badge-semi {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #6d28d9;
+}
+
+/* ==================== BEDS GRID ==================== */
+.beds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+/* ==================== BED CARD ==================== */
+.bed-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    min-height: 150px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.bed-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Available Bed */
+.bed-available {
+    border: 3px solid #10b981;
+}
+
+.bed-available:hover {
+    border-color: #059669;
+    background: #f0fdf4;
+}
+
+/* Occupied Bed */
+.bed-occupied {
+    border: 3px solid #ef4444;
+}
+
+.bed-occupied:hover {
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+
+/* Bed Status Dot */
+.bed-status-dot {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bed-status-dot.available {
+    background: #10b981;
+    animation: pulse-green 2s infinite;
+}
+
+.bed-status-dot.occupied {
+    background: #ef4444;
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+    }
+}
+
+@keyframes pulse-red {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+}
+
+/* Bed Icon */
+.bed-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+/* Bed ID */
+.bed-id {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1f3a;
+    text-align: center;
+}
+
+/* Patient Name */
+.patient-name {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    font-weight: 500;
+    margin-top: 6px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .main-content {
+        padding: 30px;
+    }
+
+    .beds-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 16px;
+    }
+
+    .bed-card {
+        min-height: 130px;
+        padding: 20px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .page-header {
+        flex-direction: column;
+    }
+
+    .beds-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .bed-card {
+        min-height: 120px;
+        padding: 16px;
+    }
+
+    .bed-icon {
+        font-size: 36px;
+    }
+
+    .ward-section {
+        padding: 20px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

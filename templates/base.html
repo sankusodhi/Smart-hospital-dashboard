@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediFlow{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <!-- Logo -->
+        <div class="logo-section">
+            <div class="logo">
+                <div class="logo-icon">⚕️</div>
+                <div class="logo-text">
+                    <h3>MediFlow</h3>
+                    <p>Hospital Management</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Dropdown -->
+        <div class="user-section">
+            <button class="user-btn" onclick="toggleUserDropdown()">
+                <div class="user-info">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-details">
+                        <h4>{{ session.get('role', 'Public View') }}</h4>
+                        <p>Switch Role</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="userDropdown">
+                <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Admin/Receptionist">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin / Receptionist</span>
+                </a>
+                <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Doctor View">
+                    <i class="fas fa-stethoscope"></i>
+                    <span>Doctor View</span>
+                </a>
+                <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Public View">
+                    <i class="fas fa-globe"></i>
+                    <span>Public View</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="{{ url_for('login_page') }}">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login (Admin)</span>
+                </a>
+                <a class="dropdown-item" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="nav-menu">
+            <a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('patient_dashboard') }}" class="nav-item {% if request.endpoint == 'patient_dashboard' %}active{% endif %}">
+                <i class="fas fa-user"></i>
+                <span>Patient Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('patient_registration') }}" class="nav-item {% if request.endpoint == 'patient_registration' %}active{% endif %}">
+                <i class="fas fa-user-plus"></i>
+                <span>Patient Registration</span>
+            </a>
+
+            <a href="{{ url_for('opd_queue') }}" class="nav-item {% if request.endpoint == 'opd_queue' %}active{% endif %}">
+                <i class="fas fa-clipboard-list"></i>
+                <span>OPD Queue</span>
+            </a>
+
+            <a href="{{ url_for('bed_management') }}" class="nav-item {% if request.endpoint == 'bed_management' %}active{% endif %}">
+                <i class="fas fa-bed"></i>
+                <span>Bed Management</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                        <button onclick="this.parentElement.style.display='none';">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

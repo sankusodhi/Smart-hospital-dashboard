@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Success - MediFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 500px;
+            padding: 48px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            animation: bounce 0.6s ease-out;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: #64748b;
+            margin-bottom: 36px;
+        }
+
+        .token-card {
+            background: linear-gradient(135deg, #f0f4f8 0%, #f8fafc 100%);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 32px;
+        }
+
+        .token-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .token-number {
+            font-size: 44px;
+            font-weight: 900;
+            color: #667eea;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 8px;
+        }
+
+        .token-sublabel {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .patient-info {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 28px;
+            text-align: left;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .info-value {
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-direction: column;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            border-color: #94a3b8;
+        }
+
+        .warning-box {
+            background: #fef9c3;
+            border-left: 4px solid #fbbf24;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 24px;
+            text-align: left;
+            font-size: 13px;
+            color: #92400e;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .success-container {
+                padding: 32px 24px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .token-number {
+                font-size: 36px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        
+        <h1>Registration Successful!</h1>
+        <p class="subtitle">Your token has been generated</p>
+
+        <div class="token-card">
+            <div class="token-label">Your Token Number</div>
+            <div class="token-number">{{ token }}</div>
+            <div class="token-sublabel">Save this for your appointment</div>
+        </div>
+
+        <div class="patient-info">
+            <div class="info-row">
+                <span class="info-label">Patient Name:</span>
+                <span class="info-value">{{ patient_name if patient_name else 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Age:</span>
+                <span class="info-value">{{ patient_age if patient_age else 'N/A' }} {% if patient_age %}years{% endif %}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Department:</span>
+                <span class="info-value">{{ patient_department if patient_department else 'N/A' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Patient ID:</span>
+                <span class="info-value">{% if patient_id %}#{{ patient_id }}{% else %}N/A{% endif %}</span>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            📝 <strong>Important:</strong> Please save your token number. You'll need it for check-in at the OPD or bed admission.
+        </div>
+
+        <div class="action-buttons">
+            <a href="/bed-management" class="btn btn-primary">View Bed Availability</a>
+            <a href="/" class="btn btn-secondary">Go to Home</a>
+        </div>
+    </div>
+</body>
+</html>

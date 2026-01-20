@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bed Management - MediFlow</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- ==================== SIDEBAR ==================== -->
+        <aside class="sidebar">
+            
+            <!-- Logo Section -->
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="logo-text">
+                    <h1 class="logo-title">MediFlow</h1>
+                    <p class="logo-subtitle">Hospital Management</p>
+                </div>
+            </div>
+
+            <!-- Role Card -->
+            <div class="role-card">
+                <div class="role-avatar">PB</div>
+                <div class="role-info">
+                    <h3 class="role-title">Public View</h3>
+                    <p class="role-switch">Switch Role</p>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#bed-management" class="nav-item active">
+                    <i class="fas fa-bed"></i>
+                    <span>Bed Management</span>
+                </a>
+            </nav>
+
+            <!-- System Status -->
+            <div class="system-status">
+                <span class="status-dot"></span>
+                <span class="status-text">System Online</span>
+            </div>
+
+        </aside>
+
+        <!-- ==================== MAIN CONTENT ==================== -->
+        <main class="main-content">
+            
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <h1 class="page-title">Bed Management</h1>
+                    <p class="page-subtitle">Real-time bed availability across all wards</p>
+                </div>
+                <div class="header-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot legend-available"></span>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot legend-occupied"></span>
+                        <span>Occupied</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== ICU WARD ==================== -->
+            <section class="ward-section ward-icu">
+                <div class="ward-header">
+                    <div class="ward-info">
+                        <h2 class="ward-title">🏥 ICU (Intensive Care Unit)</h2>
+                        <p class="ward-subtitle">Critical care beds with advanced monitoring</p>
+                    </div>
+                    <div class="availability-badge badge-icu">
+                        3 / 6 available
+                    </div>
+                </div>
+
+                <!-- Bed Grid -->
+                <div class="bed-grid">
+                    
+                    <!-- Bed 1 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-01</div>
+                    </div>
+
+                    <!-- Bed 2 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-02</div>
+                        <div class="patient-name">John Smith</div>
+                    </div>
+
+                    <!-- Bed 3 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-03</div>
+                    </div>
+
+                    <!-- Bed 4 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-04</div>
+                        <div class="patient-name">Emma Wilson</div>
+                    </div>
+
+                    <!-- Bed 5 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-05</div>
+                    </div>
+
+                    <!-- Bed 6 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-06</div>
+                        <div class="patient-name">Robert Brown</div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ==================== GENERAL WARD ==================== -->
+            <section class="ward-section ward-general">
+                <div class="ward-header">
+                    <div class="ward-info">
+                        <h2 class="ward-title">🏨 General Ward</h2>
+                        <p class="ward-subtitle">Standard care beds for general patients</p>
+                    </div>
+                    <div class="availability-badge badge-general">
+                        5 / 8 available
+                    </div>
+                </div>
+
+                <!-- Bed Grid -->
+                <div class="bed-grid">
+                    
+                    <!-- Bed 1 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-01</div>
+                    </div>
+
+                    <!-- Bed 2 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-02</div>
+                        <div class="patient-name">Sarah Davis</div>
+                    </div>
+
+                    <!-- Bed 3 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-03</div>
+                    </div>
+
+                    <!-- Bed 4 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-04</div>
+                    </div>
+
+                    <!-- Bed 5 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-05</div>
+                        <div class="patient-name">Michael Lee</div>
+                    </div>
+
+                    <!-- Bed 6 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-06</div>
+                    </div>
+
+                    <!-- Bed 7 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-07</div>
+                    </div>
+
+                    <!-- Bed 8 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-08</div>
+                        <div class="patient-name">Linda Garcia</div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ==================== SEMI-PRIVATE WARD ==================== -->
+            <section class="ward-section ward-semi-private">
+                <div class="ward-header">
+                    <div class="ward-info">
+                        <h2 class="ward-title">🛋️ Semi-Private Ward</h2>
+                        <p class="ward-subtitle">Private rooms with enhanced amenities</p>
+                    </div>
+                    <div class="availability-badge badge-semi-private">
+                        3 / 6 available
+                    </div>
+                </div>
+
+                <!-- Bed Grid -->
+                <div class="bed-grid">
+                    
+                    <!-- Bed 1 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SP-01</div>
+                    </div>
+
+                    <!-- Bed 2 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SP-02</div>
+                        <div class="patient-name">James Taylor</div>
+                    </div>
+
+                    <!-- Bed 3 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SP-03</div>
+                        <div class="patient-name">Patricia Martinez</div>
+                    </div>
+
+                    <!-- Bed 4 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SP-04</div>
+                    </div>
+
+                    <!-- Bed 5 - Occupied -->
+                    <div class="bed-card bed-occupied">
+                        <span class="bed-status-dot status-occupied"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SP-05</div>
+                        <div class="patient-name">David Anderson</div>
+                    </div>
+
+                    <!-- Bed 6 - Available -->
+                    <div class="bed-card bed-available">
+                        <span class="bed-status-dot status-available"></span>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SP-06</div>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+</body>
+</html>

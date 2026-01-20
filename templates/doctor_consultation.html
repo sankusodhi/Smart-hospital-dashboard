@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Consultation - MediFlow</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- ==================== SIDEBAR ==================== -->
+        <aside class="sidebar">
+            
+            <div class="sidebar-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="logo-text">
+                    <h1 class="logo-title">MediFlow</h1>
+                    <p class="logo-subtitle">Hospital Management</p>
+                </div>
+            </div>
+
+            <div class="role-card">
+                <div class="role-avatar">
+                    {% if doctor %}
+                        {{ doctor.name[:2]|upper }}
+                    {% else %}
+                        DR
+                    {% endif %}
+                </div>
+                <div class="role-info">
+                    <h3 class="role-title">{{ role }}</h3>
+                    {% if doctor %}
+                        <p class="role-switch">{{ doctor.specialty }}</p>
+                    {% else %}
+                        <p class="role-switch">No doctor assigned</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('index') }}" class="nav-item">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('doctor_consultation') }}" class="nav-item active">
+                    <i class="fas fa-notes-medical"></i>
+                    <span>Consultation</span>
+                </a>
+                <a href="{{ url_for('opd_queue_assignment') }}" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Patient Queue</span>
+                </a>
+            </nav>
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+                <span class="status-text">System Online</span>
+            </div>
+
+        </aside>
+
+        <!-- ==================== MAIN CONTENT ==================== -->
+        <main class="main-content">
+            
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Doctor Consultation</h1>
+                    <p class="page-subtitle">Step 3: Patient examination and diagnosis</p>
+                </div>
+            </div>
+
+            {% if doctor %}
+            <div class="doctor-info-card">
+                <div class="doctor-header">
+                    <div class="doctor-avatar">{{ doctor.name[:2]|upper }}</div>
+                    <div class="doctor-details">
+                        <h3>Dr. {{ doctor.name }}</h3>
+                        <p>{{ doctor.specialty }}</p>
+                        <p>📞 {{ doctor.phone }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <h2 class="card-title">Patients Waiting for Consultation</h2>
+                
+                {% if patients %}
+                    <div class="consultation-list">
+                        {% for patient in patients %}
+                        <div class="consultation-card">
+                            <div class="consultation-header">
+                                <div class="patient-badge">{{ patient.name[:1]|upper }}</div>
+                                <div class="patient-details">
+                                    <h3>{{ patient.name }}</h3>
+                                    <p>{{ patient.department }} • Age: {{ patient.age }}</p>
+                                </div>
+                                <span class="badge badge-{{ patient.status|lower|replace(' ', '-') }}">
+                                    {{ patient.status }}
+                                </span>
+                            </div>
+                            <div class="consultation-body">
+                                <p><strong>Chief Complaint:</strong> {{ patient.symptoms }}</p>
+                            </div>
+                            <div class="consultation-footer">
+                                {% if patient.status == 'In Consultation' %}
+                                    <button class="btn btn-small btn-success">In Progress...</button>
+                                {% else %}
+                                    <button class="btn btn-small btn-primary">Start Consultation</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <i class="fas fa-smile-wink" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                        <p>No patients waiting for consultation</p>
+                    </div>
+                {% endif %}
+            </div>
+
+        </main>
+
+    </div>
+</body>
+</html>

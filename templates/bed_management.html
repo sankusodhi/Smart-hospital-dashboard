@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bed Management - MediFlow</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bed_management_static.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- ==================== SIDEBAR ==================== -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2>MediFlow</h2>
+                <p>Hospital Management</p>
+            </div>
+
+            <div class="role-card">
+                <div class="role-avatar">PB</div>
+                <div class="role-info">
+                    <div class="role-text">Public View</div>
+                    <div class="role-switch">Switch Role</div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item">
+                    <div class="nav-icon">📊</div>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <div class="nav-icon">🛏️</div>
+                    <span>Bed Management</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="status-dot"></div>
+                <span>System Online</span>
+            </div>
+        </aside>
+
+        <!-- ==================== MAIN CONTENT ==================== -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <header class="page-header">
+                <div class="header-left">
+                    <h1>Bed Management</h1>
+                    <p>Real-time bed availability across all wards</p>
+                </div>
+                <div class="header-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot available"></span>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot occupied"></span>
+                        <span>Occupied</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ICU Section -->
+            <section class="ward-section ward-icu">
+                <div class="ward-header">
+                    <div class="ward-info">
+                        <h2>ICU</h2>
+                        <p>Intensive Care Unit</p>
+                    </div>
+                    <div class="availability-badge badge-icu">3 / 6 available</div>
+                </div>
+                <div class="beds-grid">
+                    <!-- Available Bed -->
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-01</div>
+                    </div>
+                    <!-- Occupied Bed -->
+                    <div class="bed-card bed-occupied">
+                        <div class="bed-status-dot occupied"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-02</div>
+                        <div class="patient-name">John Doe</div>
+                    </div>
+                    <div class="bed-card bed-occupied">
+                        <div class="bed-status-dot occupied"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-03</div>
+                        <div class="patient-name">Sarah Smith</div>
+                    </div>
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-04</div>
+                    </div>
+                    <div class="bed-card bed-occupied">
+                        <div class="bed-status-dot occupied"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-05</div>
+                        <div class="patient-name">Mike Johnson</div>
+                    </div>
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">ICU-06</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- General Ward Section -->
+            <section class="ward-section ward-general">
+                <div class="ward-header">
+                    <div class="ward-info">
+                        <h2>General Ward</h2>
+                        <p>Standard patient care</p>
+                    </div>
+                    <div class="availability-badge badge-general">5 / 8 available</div>
+                </div>
+                <div class="beds-grid">
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-01</div>
+                    </div>
+                    <div class="bed-card bed-occupied">
+                        <div class="bed-status-dot occupied"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-02</div>
+                        <div class="patient-name">Emma Wilson</div>
+                    </div>
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-03</div>
+                    </div>
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-04</div>
+                    </div>
+                    <div class="bed-card bed-occupied">
+                        <div class="bed-status-dot occupied"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-05</div>
+                        <div class="patient-name">David Brown</div>
+                    </div>
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-06</div>
+                    </div>
+                    <div class="bed-card bed-occupied">
+                        <div class="bed-status-dot occupied"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-07</div>
+                        <div class="patient-name">Lisa Anderson</div>
+                    </div>
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">GEN-08</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Semi-Private Section -->
+            <section class="ward-section ward-semi">
+                <div class="ward-header">
+                    <div class="ward-info">
+                        <h2>Semi-Private</h2>
+                        <p>Shared accommodation</p>
+                    </div>
+                    <div class="availability-badge badge-semi">2 / 4 available</div>
+                </div>
+                <div class="beds-grid">
+                    <div class="bed-card bed-occupied">
+                        <div class="bed-status-dot occupied"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SEMI-01</div>
+                        <div class="patient-name">Robert Taylor</div>
+                    </div>
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SEMI-02</div>
+                    </div>
+                    <div class="bed-card bed-occupied">
+                        <div class="bed-status-dot occupied"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SEMI-03</div>
+                        <div class="patient-name">Jennifer Lee</div>
+                    </div>
+                    <div class="bed-card bed-available">
+                        <div class="bed-status-dot available"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">SEMI-04</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

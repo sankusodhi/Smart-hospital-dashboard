@@ -1,0 +1,462 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Bed Management - MediFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==================== BED MANAGEMENT STYLES ==================== */
+    .bed-management-container {
+        padding: 32px;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .bed-header {
+        margin-bottom: 40px;
+    }
+
+    .bed-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .bed-header p {
+        font-size: 16px;
+        color: #64748b;
+    }
+
+    /* Legend */
+    .bed-legend {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 32px;
+        padding: 16px 24px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .legend-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    .legend-dot.available {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .legend-dot.occupied {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Ward Section */
+    .ward-section {
+        margin-bottom: 40px;
+        background: white;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid;
+    }
+
+    .ward-section.icu {
+        border-left-color: #ef4444;
+    }
+
+    .ward-section.general {
+        border-left-color: #3b82f6;
+    }
+
+    .ward-section.semi-private {
+        border-left-color: #8b5cf6;
+    }
+
+    .ward-section.private {
+        border-left-color: #f59e0b;
+    }
+
+    .ward-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .ward-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ward-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .ward-section.icu .ward-icon {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    }
+
+    .ward-section.general .ward-icon {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    }
+
+    .ward-section.semi-private .ward-icon {
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+    }
+
+    .ward-section.private .ward-icon {
+        background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    }
+
+    .ward-info h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 4px;
+    }
+
+    .ward-info p {
+        font-size: 14px;
+        color: #64748b;
+    }
+
+    .ward-stats {
+        text-align: right;
+    }
+
+    .availability-badge {
+        font-size: 18px;
+        font-weight: 700;
+        padding: 8px 20px;
+        border-radius: 8px;
+        display: inline-block;
+        margin-bottom: 4px;
+    }
+
+    .ward-section.icu .availability-badge {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+    }
+
+    .ward-section.general .availability-badge {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+    }
+
+    .ward-section.semi-private .availability-badge {
+        background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+        color: #6b21a8;
+    }
+
+    .ward-section.private .availability-badge {
+        background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+        color: #92400e;
+    }
+
+    .occupancy-text {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    /* Beds Grid */
+    .beds-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+
+    /* Bed Card */
+    .bed-card {
+        position: relative;
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid;
+        transition: all 0.3s ease;
+        min-height: 140px;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+    }
+
+    /* Available Bed - Green */
+    .bed-card.available {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-color: #86efac;
+    }
+
+    .bed-card.available:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+        border-color: #10b981;
+    }
+
+    /* Occupied Bed - Red */
+    .bed-card.occupied {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-color: #fca5a5;
+    }
+
+    .bed-card.occupied:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
+        border-color: #ef4444;
+    }
+
+    /* Status Indicator */
+    .bed-status-indicator {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    .bed-card.available .bed-status-indicator {
+        background: #10b981;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+
+    .bed-card.occupied .bed-status-indicator {
+        background: #ef4444;
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    /* Bed Icon */
+    .bed-icon {
+        font-size: 32px;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    /* Bed ID */
+    .bed-id {
+        font-size: 18px;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .bed-card.available .bed-id {
+        color: #059669;
+    }
+
+    .bed-card.occupied .bed-id {
+        color: #dc2626;
+    }
+
+    /* Patient Info */
+    .patient-info {
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .patient-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .patient-name::before {
+        content: "👤";
+        font-size: 12px;
+    }
+
+    .doctor-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .doctor-name::before {
+        content: "👨‍⚕️";
+        font-size: 11px;
+    }
+
+    /* Available Status Badge */
+    .available-badge {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: #059669;
+        padding: 8px;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 6px;
+        margin-top: auto;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .empty-state-text {
+        font-size: 18px;
+        font-weight: 500;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .beds-grid {
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .bed-management-container {
+            padding: 20px;
+        }
+
+        .bed-header h1 {
+            font-size: 24px;
+        }
+
+        .ward-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .ward-stats {
+            text-align: left;
+        }
+
+        .beds-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+        }
+
+        .bed-legend {
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .beds-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bed-management-container">
+    <!-- Page Header -->
+    <div class="bed-header">
+        <h1>🛏️ Bed Management</h1>
+        <p>Real-time bed availability and patient assignments across all wards</p>
+    </div>
+
+    <!-- Legend -->
+    <div class="bed-legend">
+        <div class="legend-item">
+            <span class="legend-dot available"></span>
+            <span>Available</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot occupied"></span>
+            <span>Occupied</span>
+        </div>
+    </div>
+
+    {% if wards %}
+        {% for ward_name, ward_data in wards.items() %}
+        <section class="ward-section {{ ward_name.lower().replace(' ', '-') }}">
+            <div class="ward-header">
+                <div class="ward-title">
+                    <div class="ward-icon">🏥</div>
+                    <div class="ward-info">
+                        <h2>{{ ward_name }}</h2>
+                        <p>{{ ward_data.total }} beds total</p>
+                    </div>
+                </div>
+                <div class="ward-stats">
+                    <div class="availability-badge">
+                        {{ ward_data.available }} / {{ ward_data.total }} Available
+                    </div>
+                    <div class="occupancy-text">
+                        {{ ward_data.occupied }} occupied
+                    </div>
+                </div>
+            </div>
+
+            <div class="beds-grid">
+                {% for bed in ward_data.beds %}
+                <div class="bed-card {% if bed.patient_name %}occupied{% else %}available{% endif %}">
+                    <div class="bed-status-indicator"></div>
+                    <div class="bed-icon">🛏️</div>
+                    <div class="bed-id">{{ bed.bed_name }}</div>
+                    
+                    {% if bed.patient_name %}
+                    <div class="patient-info">
+                        <div class="patient-name">{{ bed.patient_name }}</div>
+                        {% if bed.assigned_doctor %}
+                        <div class="doctor-name">{{ bed.assigned_doctor }}</div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="available-badge">Available</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🏥</div>
+        <div class="empty-state-text">No beds configured in the system</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

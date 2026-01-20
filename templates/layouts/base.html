@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediFlow Hospital Management{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_system.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if session.get('view_role') in ['hospital', 'doctor'] %}has-sidebar{% else %}no-sidebar{% endif %}">
+    <div class="dashboard-container">
+        <!-- Sidebar - Only for Hospital/Doctor View -->
+        {% if session.get('view_role') in ['hospital', 'doctor'] %}
+            {% include 'components/sidebar.html' %}
+        {% endif %}
+
+        <!-- Main Content Area -->
+        <main class="main-dashboard-content">
+            <!-- Top Header Bar -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                    <p class="header-subtitle">{% block page_subtitle %}Welcome to MediFlow{% endblock %}</p>
+                </div>
+                <div class="header-right">
+                    <!-- View Switch Button -->
+                    <div class="view-switcher">
+                        {% if session.get('view_role') == 'patient' %}
+                            <a href="{{ url_for('switch_view', view='hospital') }}" class="switch-view-btn">
+                                <i class="fas fa-hospital"></i>
+                                <span>Switch to Hospital Dashboard</span>
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('switch_view', view='patient') }}" class="switch-view-btn">
+                                <i class="fas fa-user"></i>
+                                <span>Switch to Patient View</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- User Info -->
+                    <div class="user-info-badge">
+                        <div class="user-avatar">
+                            {% if session.get('role') == 'Admin' %}
+                                <i class="fas fa-user-shield"></i>
+                            {% elif session.get('role') == 'Doctor' %}
+                                <i class="fas fa-user-md"></i>
+                            {% elif session.get('role') == 'Receptionist' %}
+                                <i class="fas fa-user-tie"></i>
+                            {% elif session.get('view_role') == 'patient' %}
+                                <i class="fas fa-user"></i>
+                            {% else %}
+                                <i class="fas fa-user-md"></i>
+                            {% endif %}
+                        </div>
+                        <div class="user-details">
+                            <span class="user-role">
+                                {% if session.get('full_name') %}
+                                    {{ session.get('full_name') }} ({{ session.get('role') }})
+                                {% elif session.get('view_role') == 'patient' %}
+                                    Patient View
+                                {% elif session.get('view_role') == 'doctor' %}
+                                    Doctor View
+                                {% else %}
+                                    Hospital Admin
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% if session.get('user_id') %}
+                        <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </header>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message flash-{{ category }}">
+                                <i class="fas fa-info-circle"></i>
+                                <span>{{ message }}</span>
+                                <button onclick="this.parentElement.remove()" class="close-flash">×</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Page Content -->
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(function() {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(msg => {
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

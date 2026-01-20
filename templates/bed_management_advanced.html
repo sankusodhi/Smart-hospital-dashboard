@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛏️ Advanced Bed Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 2.5em;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header .stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 15px 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-box h3 {
+            color: #667eea;
+            font-size: 1.8em;
+        }
+
+        .stat-box p {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .beds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .bed-card {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .bed-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .bed-card.available {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+        }
+
+        .bed-card.available:hover {
+            border-color: #218838;
+            background: linear-gradient(135deg, #c3e6cb 0%, #b1e0a3 100%);
+        }
+
+        .bed-card.occupied {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-color: #dc3545;
+        }
+
+        .bed-card.occupied:hover {
+            border-color: #c82333;
+        }
+
+        .bed-card h3 {
+            font-size: 1.5em;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .bed-card .ward {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .bed-card .status {
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .bed-card.available .status {
+            background: #28a745;
+            color: white;
+        }
+
+        .bed-card.occupied .status {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+        }
+
+        .btn-assign {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-assign:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .btn-discharge {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-discharge:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .modal-body {
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background: #5568d3;
+            transform: scale(1.02);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #6c757d;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #000;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .patient-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .patient-info p {
+            margin: 5px 0;
+            color: #333;
+        }
+
+        .patient-info strong {
+            color: #667eea;
+        }
+
+        .patient-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .patient-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .patient-item:hover {
+            background: #f8f9fa;
+        }
+
+        .patient-item:last-child {
+            border-bottom: none;
+        }
+
+        .patient-item.selected {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+        }
+
+        @media (max-width: 1200px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <a href="/" style="text-decoration: none; background: #667eea; color: white; padding: 12px 20px; border-radius: 8px; font-weight: bold; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.background='#5568d3'" onmouseout="this.style.background='#667eea'">
+                    ← Home
+                </a>
+                <h1>🛏️ Advanced Bed Management System</h1>
+            </div>
+            <div class="stats">
+                <div class="stat-box">
+                    <h3 id="totalBeds">0</h3>
+                    <p>Total Beds</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="availableBeds">0</h3>
+                    <p>Available</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="occupiedBeds">0</h3>
+                    <p>Occupied</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="waitingPatients">0</h3>
+                    <p>Waiting</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- All Beds Section -->
+            <div class="section" style="grid-column: 1 / -1;">
+                <h2>🛏️ All Beds (Available & Occupied)</h2>
+                <div id="alertContainer"></div>
+                
+                <!-- Ward Filters -->
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button class="btn-info" onclick="filterWard('all')" id="btnAll">All Wards</button>
+                    <button class="btn-info" onclick="filterWard('ICU')" id="btnICU">ICU</button>
+                    <button class="btn-info" onclick="filterWard('General')" id="btnGeneral">General</button>
+                    <button class="btn-info" onclick="filterWard('Semi-Private')" id="btnSemiPrivate">Semi-Private</button>
+                </div>
+                
+                <div class="beds-grid" id="bedsGrid">
+                    <p>Loading beds...</p>
+                </div>
+            </div>
+
+            <!-- Waiting Patients Section -->
+            <div class="section">
+                <h2>👥 Waiting for Admission</h2>
+                <div class="patient-list" id="patientsList">
+                    <p style="padding: 20px; text-align: center;">Loading patients...</p>
+                </div>
+                <button class="btn-info" style="width: 100%; margin-top: 15px;" onclick="loadData()">
+                    🔄 Refresh Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Modal -->
+    <div id="assignModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="modal-header">Assign Patient to Bed</div>
+            <div id="modalAlert"></div>
+            <div class="modal-body">
+                <div id="selectedPatientInfo"></div>
+                <div class="form-group">
+                    <label for="doctorName">Doctor Name:</label>
+                    <input type="text" id="doctorName" placeholder="Enter doctor's name" value="Dr. On Duty">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-submit" onclick="confirmAssignment()">✓ Assign Bed</button>
+                <button class="btn-cancel" onclick="closeModal()">✗ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedPatient = null;
+        let selectedBed = null;
+        let allBedsData = [];
+        let currentWardFilter = 'all';
+        const WARDS = {
+            'ICU': '#e74c3c',
+            'General': '#3498db',
+            'Semi-Private': '#f39c12'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setInterval(loadData, 30000); // Refresh every 30 seconds
+        });
+
+        function loadData() {
+            loadAllBeds();
+            loadPatients();
+        }
+
+        function loadAllBeds() {
+            fetch('/api/all-beds')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        allBedsData = data.beds;
+                        displayBeds(allBedsData);
+                        updateStats();
+                    } else {
+                        showAlert('Error loading beds: ' + data.message, 'error', 'alertContainer');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Failed to load beds', 'error', 'alertContainer');
+                });
+        }
+
+        function filterWard(ward) {
+            currentWardFilter = ward;
+            
+            // Update button styles
+            document.querySelectorAll('.btn-info').forEach(btn => {
+                btn.style.background = '#17a2b8';
+            });
+            
+            const btnId = ward === 'all' ? 'btnAll' : 
+                          ward === 'ICU' ? 'btnICU' : 
+                          ward === 'General' ? 'btnGeneral' : 'btnSemiPrivate';
+            document.getElementById(btnId).style.background = '#138496';
+            
+            // Filter and display
+            const filtered = ward === 'all' ? allBedsData : 
+                           allBedsData.filter(bed => bed.ward === ward);
+            displayBeds(filtered);
+        }
+
+        function displayBeds(beds) {
+            const bedsGrid = document.getElementById('bedsGrid');
+            bedsGrid.innerHTML = '';
+
+            beds.forEach(bed => {
+                const isOccupied = bed.status === 'Occupied';
+                const bedCard = document.createElement('div');
+                bedCard.className = `bed-card ${isOccupied ? 'occupied' : 'available'}`;
+                
+                let bedContent = `
+                    <div class="ward">${bed.ward || 'General'}</div>
+                    <h3>${bed.bed_name}</h3>
+                    <div class="status">${isOccupied ? '🔴 Occupied' : '✓ Available'}</div>
+                `;
+                
+                if (isOccupied && bed.patient_name) {
+                    bedContent += `
+                        <div class="patient-info" style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.3); border-radius: 5px;">
+                            <p style="margin: 3px 0; font-weight: bold; color: #333;">👤 ${bed.patient_name}</p>
+                            <p style="margin: 3px 0; font-size: 0.85em; color: #555;">Age: ${bed.patient_age}</p>
+                            <p style="margin: 3px 0; font-size: 0.85em; color: #555;">Dept: ${bed.patient_department || 'N/A'}</p>
+                            <p style="margin: 3px 0; font-size: 0.85em; color: #555;">👨‍⚕️ ${bed.assigned_doctor || 'Dr. On Duty'}</p>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-discharge" onclick="dischargeBed(${bed.id}, '${bed.bed_name}', '${bed.patient_name}')">
+                                Discharge
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    bedContent += `
+                        <div class="btn-group">
+                            <button class="btn-assign" onclick="selectBedForAssignment(${bed.id}, '${bed.bed_name}')">
+                                Assign
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                bedCard.innerHTML = bedContent;
+                bedsGrid.appendChild(bedCard);
+            });
+
+            if (beds.length === 0) {
+                bedsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 30px; color: #999;">No beds found for selected filter</p>';
+            }
+        }
+
+        function dischargeBed(bedId, bedName, patientName) {
+            if (!confirm(`Discharge patient ${patientName} from bed ${bedName}?`)) {
+                return;
+            }
+            
+            fetch('/api/discharge-bed-patient', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ bed_id: bedId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(`✅ Patient discharged from ${bedName}`, 'success', 'alertContainer');
+                    loadData();
+                } else {
+                    showAlert('❌ ' + data.message, 'error', 'alertContainer');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('❌ Failed to discharge patient', 'error', 'alertContainer');
+            });
+        }
+
+        function loadPatients() {
+            fetch('/api/waiting-patients')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayPatients(data.patients);
+                    } else {
+                        showAlert('Error loading patients: ' + data.message, 'error', 'alertContainer');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('Failed to load patients', 'error', 'alertContainer');
+                });
+        }
+
+        function displayPatients(patients) {
+            const patientsList = document.getElementById('patientsList');
+            patientsList.innerHTML = '';
+
+            patients.forEach(patient => {
+                const patientItem = document.createElement('div');
+                patientItem.className = 'patient-item';
+                patientItem.innerHTML = `
+                    <strong>${patient.name}</strong><br>
+                    Age: ${patient.age} | Dept: ${patient.department}<br>
+                    <small style="color: #999;">Phone: ${patient.phone || 'N/A'}</small>
+                `;
+                patientItem.onclick = () => selectPatientForAssignment(patient);
+                patientsList.appendChild(patientItem);
+            });
+
+            if (patients.length === 0) {
+                patientsList.innerHTML = '<p style="padding: 30px; text-align: center; color: #999;">No patients waiting for admission</p>';
+            }
+        }
+
+        function selectBedForAssignment(bedId, bedName) {
+            if (!selectedPatient) {
+                showAlert('⚠️ Please select a patient first', 'info', 'alertContainer');
+                return;
+            }
+
+            selectedBed = { id: bedId, name: bedName };
+            openModal();
+        }
+
+        function selectPatientForAssignment(patient) {
+            selectedPatient = patient;
+            document.querySelectorAll('.patient-item').forEach(item => item.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            updateSelectedPatientInfo();
+            showAlert('✓ Patient selected. Now select a bed to assign.', 'info', 'alertContainer');
+        }
+
+        function updateSelectedPatientInfo() {
+            if (!selectedPatient) return;
+            
+            const info = document.getElementById('selectedPatientInfo');
+            info.innerHTML = `
+                <div class="patient-info">
+                    <p><strong>Patient Name:</strong> ${selectedPatient.name}</p>
+                    <p><strong>Age:</strong> ${selectedPatient.age} years</p>
+                    <p><strong>Department:</strong> ${selectedPatient.department}</p>
+                    <p><strong>Phone:</strong> ${selectedPatient.phone || 'N/A'}</p>
+                    <p><strong>Selected Bed:</strong> <span style="color: #28a745; font-weight: bold;">${selectedBed ? selectedBed.name : '(Click a bed below)'}</span></p>
+                </div>
+            `;
+        }
+
+        function openModal() {
+            if (!selectedPatient) {
+                showAlert('⚠️ Please select a patient first', 'info', 'alertContainer');
+                return;
+            }
+            updateSelectedPatientInfo();
+            document.getElementById('assignModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('assignModal').style.display = 'none';
+            selectedBed = null;
+            document.getElementById('modalAlert').innerHTML = '';
+        }
+
+        function confirmAssignment() {
+            if (!selectedPatient || !selectedBed) {
+                showAlert('⚠️ Please select both patient and bed', 'error', 'modalAlert');
+                return;
+            }
+
+            const doctorName = document.getElementById('doctorName').value.trim();
+            if (!doctorName) {
+                showAlert('⚠️ Please enter doctor name', 'error', 'modalAlert');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Assigning...';
+            btn.disabled = true;
+
+            fetch('/api/assign-bed-to-patient', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    patient_id: selectedPatient.id,
+                    bed_id: selectedBed.id,
+                    doctor_name: doctorName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+                if (data.success) {
+                    showAlert(`✅ ${data.message}`, 'success', 'modalAlert');
+                    setTimeout(() => {
+                        closeModal();
+                        selectedPatient = null;
+                        selectedBed = null;
+                        loadData();
+                        showAlert(`✅ ${data.message}`, 'success', 'alertContainer');
+                    }, 1500);
+                } else {
+                    showAlert('❌ ' + data.message, 'error', 'modalAlert');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showAlert('❌ Failed to assign bed', 'error', 'modalAlert');
+            });
+        }
+
+        function showAlert(message, type, containerId) {
+            const container = document.getElementById(containerId);
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.innerHTML = message;
+            container.innerHTML = '';
+            container.appendChild(alert);
+
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (container.contains(alert)) {
+                        container.removeChild(alert);
+                    }
+                }, 5000);
+            }
+        }
+
+        function updateStats() {
+            const availableCount = allBedsData.filter(b => b.status === 'Available').length;
+            const occupiedCount = allBedsData.filter(b => b.status === 'Occupied').length;
+            
+            document.getElementById('totalBeds').textContent = allBedsData.length;
+            document.getElementById('availableBeds').textContent = availableCount;
+            document.getElementById('occupiedBeds').textContent = occupiedCount;
+
+            fetch('/api/waiting-patients')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('waitingPatients').textContent = data.patients.length;
+                    }
+                });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('assignModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

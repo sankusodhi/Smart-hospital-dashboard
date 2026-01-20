@@ -1,0 +1,75 @@
+<!-- Sidebar Component - Only visible for Hospital/Doctor View -->
+<aside class="hospital-sidebar">
+    <!-- Logo Section -->
+    <div class="sidebar-logo">
+        <div class="logo-icon">⚕️</div>
+        <div class="logo-text">
+            <h3>MediFlow</h3>
+            <p>Hospital Management</p>
+        </div>
+    </div>
+
+    <!-- User Role Badge -->
+    <div class="sidebar-user-badge">
+        <div class="user-avatar-circle">
+            {% if session.get('view_role') == 'doctor' %}
+                <i class="fas fa-user-md"></i>
+            {% else %}
+                <i class="fas fa-hospital-user"></i>
+            {% endif %}
+        </div>
+        <div class="user-role-info">
+            <h4>
+                {% if session.get('view_role') == 'doctor' %}
+                    Doctor View
+                {% else %}
+                    Hospital Admin
+                {% endif %}
+            </h4>
+            <p>Management Portal</p>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('hospital_view_dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'hospital_view_dashboard' %}active{% endif %}">
+            <i class="fas fa-th-large"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{{ url_for('patient_registration') }}" class="sidebar-nav-item {% if request.endpoint == 'patient_registration' %}active{% endif %}">
+            <i class="fas fa-user-plus"></i>
+            <span>Patient Management</span>
+        </a>
+
+        <a href="{{ url_for('bed_management') }}" class="sidebar-nav-item {% if request.endpoint == 'bed_management' %}active{% endif %}">
+            <i class="fas fa-bed"></i>
+            <span>Bed Management</span>
+        </a>
+
+        <a href="{{ url_for('opd_queue') }}" class="sidebar-nav-item {% if request.endpoint == 'opd_queue' %}active{% endif %}">
+            <i class="fas fa-clipboard-list"></i>
+            <span>OPD Queue</span>
+        </a>
+
+        <a href="{{ url_for('hospital_view_dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'hospital_view_dashboard' %}active{% endif %}">
+            <i class="fas fa-chart-line"></i>
+            <span>Reports</span>
+        </a>
+
+        <div class="sidebar-divider"></div>
+
+        <a href="{{ url_for('switch_view', view='patient') }}" class="sidebar-nav-item switch-view-item">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Switch to Patient View</span>
+        </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>System Online</span>
+        </div>
+    </div>
+</aside>

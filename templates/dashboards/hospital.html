@@ -1,0 +1,281 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Hospital Dashboard - MediFlow{% endblock %}
+
+{% block page_title %}Hospital Management Dashboard{% endblock %}
+{% block page_subtitle %}Complete overview of hospital operations and management{% endblock %}
+
+{% block content %}
+<div class="hospital-view-container">
+    
+    <!-- Dashboard Overview Stats -->
+    <div class="overview-stats-section">
+        <h3 class="section-title">Today's Overview</h3>
+        <div class="stats-grid hospital-stats">
+            <div class="stat-card-large">
+                <div class="stat-header">
+                    <div class="stat-icon-large blue">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i> +12%
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <h4>Total Patients</h4>
+                    <p class="stat-number-large">{{ patients_today }}</p>
+                    <span class="stat-description">Registered today</span>
+                </div>
+                <div class="stat-footer">
+                    <a href="{{ url_for('patient_registration') }}">View Details →</a>
+                </div>
+            </div>
+
+            <div class="stat-card-large">
+                <div class="stat-header">
+                    <div class="stat-icon-large yellow">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-trend neutral">
+                        <i class="fas fa-minus"></i> 0%
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <h4>OPD Queue</h4>
+                    <p class="stat-number-large">{{ in_queue }}</p>
+                    <span class="stat-description">Patients waiting</span>
+                </div>
+                <div class="stat-footer">
+                    <a href="{{ url_for('opd_queue') }}">Manage Queue →</a>
+                </div>
+            </div>
+
+            <div class="stat-card-large">
+                <div class="stat-header">
+                    <div class="stat-icon-large green">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i> +5
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <h4>Occupied Beds</h4>
+                    <p class="stat-number-large">{{ occupied_beds }}/{{ total_beds }}</p>
+                    <span class="stat-description">{{ ((occupied_beds/total_beds)*100)|round|int }}% Occupancy</span>
+                </div>
+                <div class="stat-footer">
+                    <a href="{{ url_for('bed_management') }}">Manage Beds →</a>
+                </div>
+            </div>
+
+            <div class="stat-card-large">
+                <div class="stat-header">
+                    <div class="stat-icon-large purple">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i> +8%
+                    </div>
+                </div>
+                <div class="stat-content">
+                    <h4>Admissions</h4>
+                    <p class="stat-number-large">{{ occupied_beds }}</p>
+                    <span class="stat-description">Current admissions</span>
+                </div>
+                <div class="stat-footer">
+                    <a href="{{ url_for('hospital_view_dashboard') }}">View Reports →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Status -->
+    <div class="department-status-section">
+        <h3 class="section-title">Department Status</h3>
+        <div class="department-grid">
+            <div class="department-card">
+                <div class="dept-header">
+                    <i class="fas fa-heartbeat"></i>
+                    <h4>General Medicine</h4>
+                </div>
+                <div class="dept-stats">
+                    <div class="dept-stat-item">
+                        <span class="dept-label">Patients</span>
+                        <span class="dept-value">{{ (patients_today * 0.35)|round|int }}</span>
+                    </div>
+                    <div class="dept-stat-item">
+                        <span class="dept-label">Queue</span>
+                        <span class="dept-value">{{ (in_queue * 0.4)|round|int }}</span>
+                    </div>
+                </div>
+                <div class="dept-status active">
+                    <span class="status-dot"></span> Active
+                </div>
+            </div>
+
+            <div class="department-card">
+                <div class="dept-header">
+                    <i class="fas fa-heart"></i>
+                    <h4>Cardiology</h4>
+                </div>
+                <div class="dept-stats">
+                    <div class="dept-stat-item">
+                        <span class="dept-label">Patients</span>
+                        <span class="dept-value">{{ (patients_today * 0.25)|round|int }}</span>
+                    </div>
+                    <div class="dept-stat-item">
+                        <span class="dept-label">Queue</span>
+                        <span class="dept-value">{{ (in_queue * 0.3)|round|int }}</span>
+                    </div>
+                </div>
+                <div class="dept-status active">
+                    <span class="status-dot"></span> Active
+                </div>
+            </div>
+
+            <div class="department-card">
+                <div class="dept-header">
+                    <i class="fas fa-bone"></i>
+                    <h4>Orthopedics</h4>
+                </div>
+                <div class="dept-stats">
+                    <div class="dept-stat-item">
+                        <span class="dept-label">Patients</span>
+                        <span class="dept-value">{{ (patients_today * 0.20)|round|int }}</span>
+                    </div>
+                    <div class="dept-stat-item">
+                        <span class="dept-label">Queue</span>
+                        <span class="dept-value">{{ (in_queue * 0.2)|round|int }}</span>
+                    </div>
+                </div>
+                <div class="dept-status active">
+                    <span class="status-dot"></span> Active
+                </div>
+            </div>
+
+            <div class="department-card">
+                <div class="dept-header">
+                    <i class="fas fa-baby"></i>
+                    <h4>Pediatrics</h4>
+                </div>
+                <div class="dept-stats">
+                    <div class="dept-stat-item">
+                        <span class="dept-label">Patients</span>
+                        <span class="dept-value">{{ (patients_today * 0.20)|round|int }}</span>
+                    </div>
+                    <div class="dept-stat-item">
+                        <span class="dept-label">Queue</span>
+                        <span class="dept-value">{{ (in_queue * 0.1)|round|int }}</span>
+                    </div>
+                </div>
+                <div class="dept-status active">
+                    <span class="status-dot"></span> Active
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Quick Links -->
+    <div class="bottom-section">
+        <div class="recent-activity-card">
+            <h3 class="section-title">Recent Patients</h3>
+            {% if recent_patients %}
+            <div class="activity-list">
+                {% for patient in recent_patients[:5] %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="activity-details">
+                        <h5>{{ patient.name }}</h5>
+                        <p>{{ patient.department }} • {{ patient.age }} years</p>
+                        <span class="activity-time">
+                            {% if patient.created_at %}
+                                {{ patient.created_at.strftime('%H:%M') }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="activity-status">
+                        {% if patient.status == 'Admitted' %}
+                            <span class="badge badge-success">{{ patient.status }}</span>
+                        {% elif patient.status == 'Waiting' %}
+                            <span class="badge badge-warning">{{ patient.status }}</span>
+                        {% else %}
+                            <span class="badge badge-info">{{ patient.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No recent activity</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="quick-links-card">
+            <h3 class="section-title">Management Tools</h3>
+            <div class="quick-links-list">
+                <a href="{{ url_for('patient_registration') }}" class="quick-link-item">
+                    <div class="quick-link-icon blue">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="quick-link-text">
+                        <h5>Register Patient</h5>
+                        <p>Add new patient</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('opd_queue') }}" class="quick-link-item">
+                    <div class="quick-link-icon yellow">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="quick-link-text">
+                        <h5>OPD Queue</h5>
+                        <p>Manage queue</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('bed_management') }}" class="quick-link-item">
+                    <div class="quick-link-icon green">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <div class="quick-link-text">
+                        <h5>Bed Assignment</h5>
+                        <p>Allocate beds</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('admission_page') }}" class="quick-link-item">
+                    <div class="quick-link-icon orange">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="quick-link-text">
+                        <h5>Patient Admission</h5>
+                        <p>Admit & view patients</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="{{ url_for('hospital_view_dashboard') }}" class="quick-link-item">
+                    <div class="quick-link-icon purple">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="quick-link-text">
+                        <h5>Analytics</h5>
+                        <p>View reports</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

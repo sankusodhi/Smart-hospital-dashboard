@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bed Management - MediFlow</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .bed-main-content {
+            background: linear-gradient(135deg, #f5f7fb 0%, #e9ecef 100%);
+            color: #2c3e50;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .legend {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            padding: 16px 24px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.available {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .legend-dot.occupied {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .ward-section {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .ward-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .ward-info h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .ward-info p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .ward-stats {
+            text-align: right;
+        }
+
+        .availability-badge {
+            font-size: 18px;
+            font-weight: 700;
+            padding: 8px 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .occupancy-text {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .beds-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .bed-card {
+            position: relative;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid;
+            transition: all 0.3s ease;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bed-card.available {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-color: #86efac;
+        }
+
+        .bed-card.available:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .bed-card.occupied {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #fca5a5;
+        }
+
+        .bed-card.occupied:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .bed-status-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .bed-card.available .bed-status-indicator {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        }
+
+        .bed-card.occupied .bed-status-indicator {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .bed-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .bed-id {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .bed-card.available .bed-id {
+            color: #059669;
+        }
+
+        .bed-card.occupied .bed-id {
+            color: #dc2626;
+        }
+
+        .patient-info {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .patient-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .doctor-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .available-badge {
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #059669;
+            padding: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 6px;
+            margin-top: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .assign-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .assign-btn:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .discharge-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .discharge-btn:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #94a3b8;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #1e293b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .modal-btn.secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .beds-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="nav-item">
+            <i class="fas fa-th-large"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('bed_management') }}" class="nav-item active">
+            <i class="fas fa-bed"></i>
+            <span>Bed Management</span>
+        </a>
+        <a href="{{ url_for('register') }}" class="nav-item">
+            <i class="fas fa-user-plus"></i>
+            <span>Patient Registration</span>
+        </a>
+        <a href="{{ url_for('opd_queue') }}" class="nav-item">
+            <i class="fas fa-clipboard-list"></i>
+            <span>OPD Queue</span>
+        </a>
+    </nav>
+
+    <div class="main">
+    <div class="bed-main-content">
+    <!-- Assign Patient Modal -->
+    <div id="assignModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🛏️ Assign Patient to Bed</h3>
+                <button class="close-btn" onclick="closeAssignModal()">&times;</button>
+            </div>
+            <form id="assignForm">
+                <input type="hidden" id="assign_bed_id" name="bed_id">
+                <div class="form-group">
+                    <label>Bed Number</label>
+                    <input type="text" id="assign_bed_name" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="form-group">
+                    <label>Patient Name *</label>
+                    <input type="text" id="patient_name" name="patient_name" required placeholder="Enter patient name">
+                </div>
+                <div class="form-group">
+                    <label>Assigned Doctor *</label>
+                    <input type="text" id="doctor_name" name="doctor_name" required placeholder="Enter doctor name">
+                </div>
+                <div class="form-group">
+                    <label>Patient Age</label>
+                    <input type="number" id="patient_age" name="patient_age" placeholder="Enter age">
+                </div>
+                <div class="form-group">
+                    <label>Department</label>
+                    <select id="department" name="department">
+                        <option value="General">General</option>
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Orthopedics">Orthopedics</option>
+                        <option value="Neurology">Neurology</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn secondary" onclick="closeAssignModal()">Cancel</button>
+                    <button type="submit" class="modal-btn primary">Assign Patient</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Discharge Confirmation Modal -->
+    <div id="dischargeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🚪 Discharge Patient</h3>
+                <button class="close-btn" onclick="closeDischargeModal()">&times;</button>
+            </div>
+            <p style="margin-bottom: 24px; color: #64748b;">Are you sure you want to discharge <strong id="discharge_patient_name"></strong> from this bed?</p>
+            <input type="hidden" id="discharge_bed_id">
+            <div class="modal-actions">
+                <button type="button" class="modal-btn secondary" onclick="closeDischargeModal()">Cancel</button>
+                <button type="button" class="modal-btn primary" onclick="confirmDischarge()">Discharge Patient</button>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🛏️ Bed Management</h1>
+            <p>Real-time bed availability and patient assignments</p>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-dot available"></span>
+                <span>Available</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot occupied"></span>
+                <span>Occupied</span>
+            </div>
+        </div>
+
+        {% if wards %}
+            {% for ward_name, ward_data in wards.items() %}
+            <section class="ward-section">
+                <div class="ward-header">
+                    <div class="ward-info">
+                        <h2>{{ ward_name }}</h2>
+                        <p>{{ ward_data.total }} beds total</p>
+                    </div>
+                    <div class="ward-stats">
+                        <div class="availability-badge">{{ ward_data.available }} / {{ ward_data.total }} Available</div>
+                        <div class="occupancy-text">{{ ward_data.occupied }} occupied</div>
+                    </div>
+                </div>
+
+                <div class="beds-grid">
+                    {% for bed in ward_data.beds %}
+                    <div class="bed-card {% if bed.patient_name %}occupied{% else %}available{% endif %}">
+                        <div class="bed-status-indicator"></div>
+                        <div class="bed-icon">🛏️</div>
+                        <div class="bed-id">{{ bed.bed_name }}</div>
+                        
+                        {% if bed.patient_name %}
+                        <div class="patient-info">
+                            <div class="patient-name">👤 {{ bed.patient_name }}</div>
+                            {% if bed.assigned_doctor %}
+                            <div class="doctor-name">👨‍⚕️ {{ bed.assigned_doctor }}</div>
+                            {% endif %}
+                        </div>
+                        <button class="action-btn discharge-btn" onclick="dischargeBed('{{ bed.bed_id }}', '{{ bed.patient_name }}')">
+                            <i class="fas fa-sign-out-alt"></i> Discharge
+                        </button>
+                        {% else %}
+                        <div class="available-badge">Available</div>
+                        <button class="action-btn assign-btn" onclick="showAssignModal('{{ bed.bed_id }}', '{{ bed.bed_name }}')">
+                            <i class="fas fa-user-plus"></i> Assign Patient
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🏥</div>
+            <div>No beds configured in the system</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Assign Patient Modal
+        function showAssignModal(bedId, bedName) {
+            document.getElementById('assign_bed_id').value = bedId;
+            document.getElementById('assign_bed_name').value = bedName;
+            document.getElementById('assignModal').classList.add('active');
+        }
+
+        function closeAssignModal() {
+            document.getElementById('assignModal').classList.remove('active');
+            document.getElementById('assignForm').reset();
+        }
+
+        document.getElementById('assignForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                bed_id: document.getElementById('assign_bed_id').value,
+                patient_name: document.getElementById('patient_name').value,
+                doctor_name: document.getElementById('doctor_name').value,
+                patient_age: document.getElementById('patient_age').value || 0,
+                department: document.getElementById('department').value
+            };
+
+            try {
+                const response = await fetch('/api/assign-bed-patient', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Patient assigned successfully!');
+                    closeAssignModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error assigning patient: ' + error.message);
+            }
+        });
+
+        // Discharge Patient Modal
+        function dischargeBed(bedId, patientName) {
+            document.getElementById('discharge_bed_id').value = bedId;
+            document.getElementById('discharge_patient_name').textContent = patientName;
+            document.getElementById('dischargeModal').classList.add('active');
+        }
+
+        function closeDischargeModal() {
+            document.getElementById('dischargeModal').classList.remove('active');
+        }
+
+        async function confirmDischarge() {
+            const bedId = document.getElementById('discharge_bed_id').value;
+
+            try {
+                const response = await fetch('/api/discharge-bed-patient', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ bed_id: bedId })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Patient discharged successfully!');
+                    closeDischargeModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error discharging patient: ' + error.message);
+            }
+        }
+
+        // Close modals on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeAssignModal();
+                closeDischargeModal();
+            }
+        }
+    </script>
+    </div>
+    </div>
+</body>
+</html>

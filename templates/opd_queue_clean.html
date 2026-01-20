@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPD Queue - MediFlow</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ==================== GLOBAL STYLES ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fb 0%, #e8ecf4 100%);
+            color: #1f2937;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        /* ==================== MAIN CONTAINER ==================== */
+        .opd-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ==================== HEADER ==================== */
+        .opd-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fc 100%);
+            padding: 32px 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid #667eea;
+        }
+
+        .header-left h1 {
+            font-size: 36px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-left p {
+            font-size: 15px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .status-badges {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .badge-waiting {
+            background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
+            color: #b45309;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .badge-consulting {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge-completed {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .badge-count {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        /* ==================== PATIENT CARDS ==================== */
+        .patient-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .patient-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 28px 32px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            border-left: 6px solid #667eea;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .patient-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+            border-radius: 0 16px 0 50%;
+        }
+
+        .patient-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+        }
+
+        .patient-card.waiting {
+            border-left-color: #f59e0b;
+        }
+
+        .patient-card.waiting::before {
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, transparent 70%);
+        }
+
+        .patient-card.in-consultation {
+            border-left-color: #3b82f6;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+        }
+
+        .patient-card.in-consultation::before {
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+        }
+
+        .patient-card.completed {
+            border-left-color: #10b981;
+            opacity: 0.85;
+        }
+
+        .patient-card.completed::before {
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+        }
+
+        /* Token Badge */
+        .token-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            width: 80px;
+            height: 80px;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.35);
+            position: relative;
+            z-index: 1;
+        }
+
+        .token-badge small {
+            font-size: 10px;
+            font-weight: 600;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Patient Info */
+        .patient-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .patient-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .patient-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .patient-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .patient-meta i {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        /* Patient Details Grid */
+        .patient-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        /* Symptoms */
+        .symptoms {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            padding: 14px 16px;
+            border-radius: 10px;
+            border-left: 3px solid #e5e7eb;
+            margin-top: 4px;
+        }
+
+        .symptoms strong {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .symptoms p {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        /* Status Badge on Card */
+        .patient-status {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            z-index: 2;
+        }
+
+        .status-pill {
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-waiting {
+            background: #fff7ed;
+            color: #b45309;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-in-consultation {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* Action Buttons */
+        .patient-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #ffffff;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .btn-start:hover {
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-complete {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+        }
+
+        .btn-complete:hover {
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-admit {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+        }
+
+        .btn-admit:hover {
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+        }
+
+        .completed-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            font-size: 14px;
+            font-weight: 700;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .completed-badge i {
+            font-size: 16px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            opacity: 0.6;
+        }
+
+        .empty-state h2 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            color: #64748b;
+            max-width: 400px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
+        }
+
+        /* ==================== RESPONSIVE DESIGN ==================== */
+        @media (max-width: 1024px) {
+            .patient-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .status-badges {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .opd-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+                padding: 24px;
+            }
+
+            .header-left h1 {
+                font-size: 28px;
+            }
+
+            .status-badges {
+                width: 100%;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .status-badge {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .patient-card {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 24px;
+            }
+
+            .patient-status {
+                position: static;
+                margin-bottom: 12px;
+            }
+
+            .patient-details {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .patient-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .token-badge {
+                width: 70px;
+                height: 70px;
+                font-size: 18px;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="opd-container">
+        <!-- Header -->
+        <header class="opd-header">
+            <div class="header-left">
+                <h1>OPD Queue</h1>
+                <p>All Departments</p>
+            </div>
+            <div class="status-badges">
+                <div class="status-badge badge-waiting">
+                    <span class="badge-dot"></span>
+                    <span><span class="badge-count">5</span> Waiting</span>
+                </div>
+                <div class="status-badge badge-consulting">
+                    <span class="badge-dot"></span>
+                    <span><span class="badge-count">2</span> In Consultation</span>
+                </div>
+                <div class="status-badge badge-completed">
+                    <span class="badge-dot"></span>
+                    <span><span class="badge-count">8</span> Completed</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Patient Cards -->
+        <div class="patient-list">
+            <!-- Patient 1: Waiting -->
+            <div class="patient-card waiting">
+                <div class="token-badge">
+                    <small>Token</small>
+                    C001
+                </div>
+                <div class="patient-info">
+                    <div class="patient-header">
+                        <div>
+                            <h3 class="patient-name">Rajesh Kumar</h3>
+                            <div class="patient-meta">
+                                <span><i class="fas fa-user"></i> 45 years</span>
+                                <span><i class="fas fa-clock"></i> Arrived 15 min ago</span>
+                            </div>
+                        </div>
+                        <div class="patient-status">
+                            <span class="status-pill status-waiting">Waiting</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Department</span>
+                            <span class="detail-value">General Medicine</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Assigned Doctor</span>
+                            <span class="detail-value">Dr. Sharma</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Registration Time</span>
+                            <span class="detail-value">10:30 AM</span>
+                        </div>
+                    </div>
+                    <div class="symptoms">
+                        <strong>Symptoms</strong>
+                        <p>Fever, headache, body ache for 3 days</p>
+                    </div>
+                </div>
+                <div class="patient-actions">
+                    <a href="#" class="btn btn-start">
+                        <i class="fas fa-play"></i>
+                        Start Consultation
+                    </a>
+                </div>
+            </div>
+
+            <!-- Patient 2: Waiting -->
+            <div class="patient-card waiting">
+                <div class="token-badge">
+                    <small>Token</small>
+                    C002
+                </div>
+                <div class="patient-info">
+                    <div class="patient-header">
+                        <div>
+                            <h3 class="patient-name">Priya Singh</h3>
+                            <div class="patient-meta">
+                                <span><i class="fas fa-user"></i> 32 years</span>
+                                <span><i class="fas fa-clock"></i> Arrived 8 min ago</span>
+                            </div>
+                        </div>
+                        <div class="patient-status">
+                            <span class="status-pill status-waiting">Waiting</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Department</span>
+                            <span class="detail-value">Cardiology</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Assigned Doctor</span>
+                            <span class="detail-value">Dr. Patel</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Registration Time</span>
+                            <span class="detail-value">10:45 AM</span>
+                        </div>
+                    </div>
+                    <div class="symptoms">
+                        <strong>Symptoms</strong>
+                        <p>Chest pain, shortness of breath</p>
+                    </div>
+                </div>
+                <div class="patient-actions">
+                    <a href="#" class="btn btn-start">
+                        <i class="fas fa-play"></i>
+                        Start Consultation
+                    </a>
+                </div>
+            </div>
+
+            <!-- Patient 3: In Consultation -->
+            <div class="patient-card in-consultation">
+                <div class="token-badge">
+                    <small>Token</small>
+                    C003
+                </div>
+                <div class="patient-info">
+                    <div class="patient-header">
+                        <div>
+                            <h3 class="patient-name">Amit Verma</h3>
+                            <div class="patient-meta">
+                                <span><i class="fas fa-user"></i> 28 years</span>
+                                <span><i class="fas fa-clock"></i> Consulting for 12 min</span>
+                            </div>
+                        </div>
+                        <div class="patient-status">
+                            <span class="status-pill status-in-consultation">In Consultation</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Department</span>
+                            <span class="detail-value">Orthopedics</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Assigned Doctor</span>
+                            <span class="detail-value">Dr. Mehta</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Started At</span>
+                            <span class="detail-value">10:40 AM</span>
+                        </div>
+                    </div>
+                    <div class="symptoms">
+                        <strong>Symptoms</strong>
+                        <p>Knee pain after sports injury</p>
+                    </div>
+                </div>
+                <div class="patient-actions">
+                    <a href="#" class="btn btn-complete">
+                        <i class="fas fa-check"></i>
+                        Complete
+                    </a>
+                    <a href="#" class="btn btn-admit">
+                        <i class="fas fa-bed"></i>
+                        Admit
+                    </a>
+                </div>
+            </div>
+
+            <!-- Patient 4: In Consultation -->
+            <div class="patient-card in-consultation">
+                <div class="token-badge">
+                    <small>Token</small>
+                    C004
+                </div>
+                <div class="patient-info">
+                    <div class="patient-header">
+                        <div>
+                            <h3 class="patient-name">Sunita Reddy</h3>
+                            <div class="patient-meta">
+                                <span><i class="fas fa-user"></i> 55 years</span>
+                                <span><i class="fas fa-clock"></i> Consulting for 8 min</span>
+                            </div>
+                        </div>
+                        <div class="patient-status">
+                            <span class="status-pill status-in-consultation">In Consultation</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Department</span>
+                            <span class="detail-value">General Medicine</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Assigned Doctor</span>
+                            <span class="detail-value">Dr. Sharma</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Started At</span>
+                            <span class="detail-value">10:45 AM</span>
+                        </div>
+                    </div>
+                    <div class="symptoms">
+                        <strong>Symptoms</strong>
+                        <p>Diabetes checkup and blood pressure monitoring</p>
+                    </div>
+                </div>
+                <div class="patient-actions">
+                    <a href="#" class="btn btn-complete">
+                        <i class="fas fa-check"></i>
+                        Complete
+                    </a>
+                    <a href="#" class="btn btn-admit">
+                        <i class="fas fa-bed"></i>
+                        Admit
+                    </a>
+                </div>
+            </div>
+
+            <!-- Patient 5: Completed -->
+            <div class="patient-card completed">
+                <div class="token-badge">
+                    <small>Token</small>
+                    C005
+                </div>
+                <div class="patient-info">
+                    <div class="patient-header">
+                        <div>
+                            <h3 class="patient-name">Vikram Joshi</h3>
+                            <div class="patient-meta">
+                                <span><i class="fas fa-user"></i> 38 years</span>
+                                <span><i class="fas fa-clock"></i> Completed 5 min ago</span>
+                            </div>
+                        </div>
+                        <div class="patient-status">
+                            <span class="status-pill status-completed">Completed</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Department</span>
+                            <span class="detail-value">Pediatrics</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Doctor Consulted</span>
+                            <span class="detail-value">Dr. Kapoor</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Completed At</span>
+                            <span class="detail-value">10:48 AM</span>
+                        </div>
+                    </div>
+                    <div class="symptoms">
+                        <strong>Symptoms</strong>
+                        <p>Child vaccination and general health checkup</p>
+                    </div>
+                </div>
+                <div class="patient-actions">
+                    <span class="completed-badge">
+                        <i class="fas fa-check-circle"></i>
+                        Consultation Completed
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

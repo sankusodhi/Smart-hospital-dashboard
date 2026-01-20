@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - MediFlow Hospital Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/patient_dashboard.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <!-- Logo -->
+            <div class="logo-section">
+                <div class="logo">
+                    <div class="logo-icon">⚕️</div>
+                    <div class="logo-text">
+                        <h3>MediFlow</h3>
+                        <p>Hospital Management</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Section -->
+            <div class="user-section">
+                <button class="user-btn" onclick="toggleUserDropdown()">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-info">
+                        <div class="user-details">
+                            <h4>{{ role }}</h4>
+                            <p>Switch Role</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="userDropdown">
+                    <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Admin/Receptionist">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin / Receptionist</span>
+                    </a>
+                    <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Doctor View">
+                        <i class="fas fa-stethoscope"></i>
+                        <span>Doctor View</span>
+                    </a>
+                    <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Public View">
+                        <i class="fas fa-globe"></i>
+                        <span>Public View</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="nav-menu">
+                <a href="{{ url_for('index') }}" class="nav-item active">
+                    <i class="fas fa-th-large"></i>
+                    <span>Home</span>
+                </a>
+
+                <a href="{{ url_for('bed_management') }}" class="nav-item">
+                    <i class="fas fa-bed"></i>
+                    <span>Bed Management</span>
+                </a>
+
+                <a href="{{ url_for('patient_registration') }}" class="nav-item">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Registration</span>
+                </a>
+
+                <a href="{{ url_for('opd_queue') }}" class="nav-item">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>OPD Queue</span>
+                </a>
+            </nav>
+
+            <!-- Sidebar Bottom -->
+            <div class="sidebar-bottom">
+                <div class="status-dot"></div>
+                <span>System Online</span>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-content">
+                    <h1>Patient Dashboard</h1>
+                    <p>Track your health information and hospital statistics</p>
+                </div>
+                <div class="info-banner">
+                    <i class="fas fa-info-circle"></i>
+                    <span>View hospital operations</span>
+                    <a href="{{ url_for('hospital_view_dashboard') }}">Open Hospital Dashboard →</a>
+                </div>
+            </header>
+
+            <!-- Stats Section -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <!-- Patients Today -->
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value">{{ patients_today }}</div>
+                        <div class="stat-label">Patients Today</div>
+                    </div>
+
+                    <!-- In Queue -->
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-value">{{ in_queue }}</div>
+                        <div class="stat-label">In Queue</div>
+                    </div>
+
+                    <!-- Occupied Beds -->
+                    <div class="stat-card">
+                        <div class="stat-icon">🛏️</div>
+                        <div class="stat-value">{{ occupied_beds }}</div>
+                        <div class="stat-label">Occupied Beds</div>
+                    </div>
+
+                    <!-- Total Beds -->
+                    <div class="stat-card">
+                        <div class="stat-icon">🏥</div>
+                        <div class="stat-value">{{ total_beds }}</div>
+                        <div class="stat-label">Total Beds</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Patients Table Section -->
+            <section class="table-section">
+                <div class="table-header">
+                    <h2>Recent Patients</h2>
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Search patients..." 
+                                onkeyup="filterTable()"
+                            >
+                        </div>
+                        <select class="filter-select" id="departmentFilter" onchange="filterTable()">
+                            <option value="">All Departments</option>
+                            <option value="General Medicine">General Medicine</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Orthopedics">Orthopedics</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Neurology">Neurology</option>
+                            <option value="Dermatology">Dermatology</option>
+                        </select>
+                    </div>
+                </div>
+
+                {% if recent_patients %}
+                <div class="table-container">
+                    <div class="table-content">
+                        <table id="patientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Age</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                    <th>Registration Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in recent_patients %}
+                                <tr class="patient-row" data-department="{{ patient.get('department', '') }}">
+                                    <td>
+                                        <span class="patient-name">{{ patient.get('name', 'N/A') }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="patient-age">{{ patient.get('age', '-') }} years</span>
+                                    </td>
+                                    <td>{{ patient.get('department', 'N/A') }}</td>
+                                    <td>
+                                        {% set status = patient.get('status', 'Waiting') %}
+                                        {% if status == 'Admitted' %}
+                                            <span class="status-badge status-admitted">
+                                                <i class="fas fa-check-circle"></i>
+                                                {{ status }}
+                                            </span>
+                                        {% elif status == 'Waiting' %}
+                                            <span class="status-badge status-waiting">
+                                                <i class="fas fa-clock"></i>
+                                                {{ status }}
+                                            </span>
+                                        {% elif status == 'Completed' %}
+                                            <span class="status-badge status-completed">
+                                                <i class="fas fa-check"></i>
+                                                {{ status }}
+                                            </span>
+                                        {% elif status == 'Discharge' %}
+                                            <span class="status-badge status-discharge">
+                                                <i class="fas fa-door-open"></i>
+                                                {{ status }}
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge status-waiting">
+                                                {{ status }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="time-registered">
+                                            {% if patient.get('created_at') %}
+                                                {{ patient.get('created_at').strftime('%Y-%m-%d %H:%M') if patient.get('created_at') else 'N/A' }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button onclick="previousPage()" id="prevBtn">&laquo; Previous</button>
+                        <span id="pageInfo">Page 1 of 1</span>
+                        <button onclick="nextPage()" id="nextBtn">Next &raquo;</button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="table-container">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>No Patients Yet</h3>
+                        <p>There are no registered patients to display at this time.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Toggle user dropdown
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            const userBtn = event.target.closest('.user-btn');
+            
+            if (!userBtn && dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Table pagination
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        const patientsTable = document.getElementById('patientsTable');
+        
+        function displayTable() {
+            if (!patientsTable) return;
+            
+            const rows = Array.from(patientsTable.querySelectorAll('tbody tr'));
+            const filteredRows = rows.filter(row => !row.style.display || row.style.display !== 'none');
+            
+            if (filteredRows.length === 0) {
+                document.getElementById('prevBtn').disabled = true;
+                document.getElementById('nextBtn').disabled = true;
+                return;
+            }
+
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            rows.forEach((row, index) => {
+                const displayRow = filteredRows.findIndex(r => r === row);
+                if (displayRow >= start && displayRow < end) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTable();
+            }
+        }
+
+        function nextPage() {
+            const rows = Array.from(patientsTable.querySelectorAll('tbody tr'));
+            const filteredRows = rows.filter(row => !row.style.display || row.style.display !== 'none');
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+            
+            if (currentPage < totalPages) {
+                currentPage++;
+                displayTable();
+            }
+        }
+
+        // Table filtering
+        function filterTable() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const departmentFilter = document.getElementById('departmentFilter').value;
+            const rows = patientsTable.querySelectorAll('tbody tr');
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const nameCell = row.cells[0].textContent.toLowerCase();
+                const departmentCell = row.getAttribute('data-department');
+                
+                const matchesSearch = nameCell.includes(searchInput);
+                const matchesDepartment = !departmentFilter || departmentCell === departmentFilter;
+
+                if (matchesSearch && matchesDepartment) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            currentPage = 1;
+            displayTable();
+        }
+
+        // Initialize pagination on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (patientsTable) {
+                displayTable();
+            }
+        });
+    </script>
+</body>
+</html>
