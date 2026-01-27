@@ -24,20 +24,48 @@
                     <p class="header-subtitle">{% block page_subtitle %}Welcome to MediFlow{% endblock %}</p>
                 </div>
                 <div class="header-right">
+                    {% set admin_allowed = session.get('role') in ['Admin', 'Doctor', 'Receptionist'] %}
                     <!-- View Switch Button -->
                     <div class="view-switcher">
-                        {% if session.get('view_role') == 'patient' %}
-                            <a href="{{ url_for('switch_view', view='hospital') }}" class="switch-view-btn">
-                                <i class="fas fa-hospital"></i>
-                                <span>Switch to Hospital Dashboard</span>
-                            </a>
+                        {% if admin_allowed %}
+                            {% if session.get('view_role') == 'patient' %}
+                                <a href="{{ url_for('switch_view', view='hospital') }}" class="switch-view-btn">
+                                    <i class="fas fa-hospital"></i>
+                                    <span>Switch to Hospital Dashboard</span>
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('switch_view', view='patient') }}" class="switch-view-btn">
+                                    <i class="fas fa-user"></i>
+                                    <span>Switch to Patient View</span>
+                                </a>
+                            {% endif %}
                         {% else %}
-                            <a href="{{ url_for('switch_view', view='patient') }}" class="switch-view-btn">
+                            <div class="switch-view-btn" style="cursor: default; opacity: 0.7;">
                                 <i class="fas fa-user"></i>
-                                <span>Switch to Patient View</span>
-                            </a>
+                                <span>Patient View</span>
+                            </div>
                         {% endif %}
                     </div>
+
+                    {% if admin_allowed %}
+                    <!-- Role Switch (Admin Dashboard) -->
+                    <div class="view-switcher" style="margin-left:10px;">
+                        <select aria-label="Switch Role" style="background:#0f172a; color:#e2e8f0; border:1px solid #334155; border-radius:8px; padding:10px 12px; min-width:170px;" onchange="if(this.value){window.location='/switch-role?role='+encodeURIComponent(this.value);} this.blur();">
+                            <option value="">Switch Role</option>
+                            <option value="Admin" {% if session.get('role') == 'Admin' %}selected{% endif %}>Admin</option>
+                            <option value="Doctor" {% if session.get('role') == 'Doctor' %}selected{% endif %}>Doctor</option>
+                            <option value="Receptionist" {% if session.get('role') == 'Receptionist' %}selected{% endif %}>Receptionist</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    {% if not session.get('user_id') %}
+                    <!-- Quick Login when not authenticated -->
+                    <a href="{{ url_for('login_page') }}" class="switch-view-btn" style="margin-left: 10px;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    {% endif %}
                     
                     <!-- User Info -->
                     <div class="user-info-badge">

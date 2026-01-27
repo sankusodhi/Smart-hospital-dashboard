@@ -21,7 +21,7 @@
     <div class="quick-actions-section">
         <h3 class="section-title">Quick Actions</h3>
         <div class="quick-actions-grid">
-            <a href="{{ url_for('patient_registration') }}" class="quick-action-card">
+            <a href="{{ url_for('patient_registration', new=1) }}" class="quick-action-card">
                 <div class="action-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     <i class="fas fa-calendar-plus"></i>
                 </div>
@@ -29,22 +29,39 @@
                 <p>Schedule your visit</p>
             </a>
 
-            <a href="{{ url_for('opd_queue') }}" class="quick-action-card">
+            <a href="#appointment-tracker" class="quick-action-card">
                 <div class="action-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                     <i class="fas fa-clock"></i>
                 </div>
                 <h4>Check Queue Status</h4>
-                <p>View waiting time</p>
+                <p>See your position</p>
             </a>
 
-            <a href="{{ url_for('bed_management') }}" class="quick-action-card">
+            <a href="#appointment-tracker" class="quick-action-card">
                 <div class="action-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h4>My Appointment</h4>
+                <p>View date & time</p>
+            </a>
+
+            <a href="{{ url_for('my_appointments') }}" class="quick-action-card">
+                <div class="action-icon" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+                    <i class="fas fa-route"></i>
+                </div>
+                <h4>Track Appointment</h4>
+                <p>Live status & history</p>
+            </a>
+
+            <a href="{{ url_for('view_beds_public') }}" class="quick-action-card">
+                <div class="action-icon" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
                     <i class="fas fa-bed"></i>
                 </div>
                 <h4>Bed Availability</h4>
-                <p>Check bed status</p>
+                <p>View available beds</p>
             </a>
 
+            {% if session.get('role') in ['Admin', 'Doctor', 'Receptionist'] %}
             <a href="{{ url_for('switch_view', view='hospital') }}" class="quick-action-card highlight">
                 <div class="action-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
                     <i class="fas fa-hospital"></i>
@@ -52,6 +69,91 @@
                 <h4>Hospital Dashboard</h4>
                 <p>Access full portal</p>
             </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Appointment & Queue Tracker -->
+    <div class="appointment-tracker" id="appointment-tracker">
+        <h3 class="section-title">My Appointment & Queue</h3>
+        
+        <!-- Search by Token or Name -->
+        <div style="background:#f3f4f6; border-radius:16px; padding:20px; margin-bottom:20px; border:1px solid #d1d5db;">
+            <h4 style="color:#111827; margin-bottom:16px; font-weight:700; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-search" style="color:#6d28d9;"></i>
+                Track by Token or Name
+            </h4>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <input type="text" id="searchInput" placeholder="Enter token number or patient name..." style="flex:1; min-width:250px; padding:12px 16px; border:1px solid #d1d5db; border-radius:8px; background:white; color:#111827; font-size:15px;">
+                <button onclick="searchByToken()" style="padding:12px 24px; background:#6d28d9; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </button>
+            </div>
+            <div id="searchResult" style="margin-top:16px; display:none;">
+                <div style="background:white; border-radius:12px; padding:16px; border-left:4px solid #6d28d9;">
+                    <div style="display:flex; justify-content:space-between; align-items:start; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span id="searchStatusBadge" style="padding:8px 12px; border-radius:8px; font-weight:600; font-size:14px;"></span>
+                            <span style="font-size:14px; color:#4b5563;" id="searchQueuePos">Queue: -</span>
+                        </div>
+                        <span style="font-size:14px; color:#6b7280; font-weight:600;" id="searchToken">Token: -</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px;">
+                        <div style="background:#f9fafb; padding:10px; border-radius:8px;">
+                            <div style="font-size:12px; color:#6b7280;">Patient Name</div>
+                            <div style="font-weight:600; color:#111827;" id="searchPatient">-</div>
+                        </div>
+                        <div style="background:#f9fafb; padding:10px; border-radius:8px;">
+                            <div style="font-size:12px; color:#6b7280;">Department</div>
+                            <div style="font-weight:600; color:#111827;" id="searchDept">-</div>
+                        </div>
+                        <div style="background:#f9fafb; padding:10px; border-radius:8px;">
+                            <div style="font-size:12px; color:#6b7280;">Doctor</div>
+                            <div style="font-weight:600; color:#111827;" id="searchDoctor">-</div>
+                        </div>
+                        <div style="background:#f9fafb; padding:10px; border-radius:8px;">
+                            <div style="font-size:12px; color:#6b7280;">Est. Wait</div>
+                            <div style="font-weight:600; color:#111827;" id="searchWait">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="searchError" style="margin-top:12px; padding:12px; background:#fef2f2; border-left:4px solid #ef4444; border-radius:8px; color:#991b1b; display:none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span style="margin-left:8px;" id="searchErrorText"></span>
+            </div>
+        </div>
+        
+        <div class="appointment-card" id="appointmentCard" style="background:#0f172a; color:#e2e8f0; border-radius:16px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.25);">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="background:#1d4ed8; padding:10px 14px; border-radius:10px; font-weight:700;" id="appointmentStatus">No booking yet</div>
+                    <div style="font-size:14px; color:#94a3b8;" id="queuePosition">Queue: -</div>
+                </div>
+                <div style="font-size:14px; color:#cbd5e1;" id="tokenNumber">Token: -</div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-top:16px;">
+                <div style="background:#111827; padding:12px; border-radius:12px;">
+                    <div style="font-size:13px; color:#94a3b8;">Appointment Date</div>
+                    <div style="font-weight:700; font-size:16px;" id="appointmentDate">-</div>
+                </div>
+                <div style="background:#111827; padding:12px; border-radius:12px;">
+                    <div style="font-size:13px; color:#94a3b8;">Appointment Time</div>
+                    <div style="font-weight:700; font-size:16px;" id="appointmentTime">-</div>
+                </div>
+                <div style="background:#111827; padding:12px; border-radius:12px;">
+                    <div style="font-size:13px; color:#94a3b8;">Department</div>
+                    <div style="font-weight:700; font-size:16px;" id="appointmentDept">-</div>
+                </div>
+            </div>
+            <div id="appointmentHint" style="margin-top:12px; font-size:13px; color:#cbd5e1;">Book an appointment to see your live queue status.</div>
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+                <a href="{{ url_for('opd_queue_advanced', public=1) }}" class="quick-action-card" style="text-decoration:none; background:#111827; padding:10px 14px; border-radius:10px; display:inline-flex; align-items:center; gap:8px;">
+                    <i class="fas fa-clipboard-list" style="color:#e5e7eb;"></i>
+                    <span style="color:#e5e7eb; font-weight:600;">View OPD Queue (Public)</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -65,7 +167,7 @@
                 </div>
                 <div class="stat-info">
                     <h4>Patients Today</h4>
-                    <p class="stat-number">{{ patients_today }}</p>
+                    <p class="stat-number" id="stat-patients-today">{{ patients_today }}</p>
                     <span class="stat-label">Registered</span>
                 </div>
             </div>
@@ -76,7 +178,7 @@
                 </div>
                 <div class="stat-info">
                     <h4>In Queue</h4>
-                    <p class="stat-number">{{ in_queue }}</p>
+                    <p class="stat-number" id="stat-in-queue">{{ in_queue }}</p>
                     <span class="stat-label">Waiting</span>
                 </div>
             </div>
@@ -87,8 +189,8 @@
                 </div>
                 <div class="stat-info">
                     <h4>Occupied Beds</h4>
-                    <p class="stat-number">{{ occupied_beds }}</p>
-                    <span class="stat-label">Out of {{ total_beds }}</span>
+                    <p class="stat-number" id="stat-occupied-beds">{{ occupied_beds }}</p>
+                    <span class="stat-label">Out of <span id="stat-total-beds-label">{{ total_beds }}</span></span>
                 </div>
             </div>
 
@@ -98,7 +200,7 @@
                 </div>
                 <div class="stat-info">
                     <h4>Available Beds</h4>
-                    <p class="stat-number">{{ total_beds - occupied_beds }}</p>
+                    <p class="stat-number" id="stat-available-beds">{{ total_beds - occupied_beds }}</p>
                     <span class="stat-label">Ready</span>
                 </div>
             </div>
@@ -138,17 +240,265 @@
         <div class="info-card accent">
             <div class="info-card-header">
                 <i class="fas fa-bell"></i>
-                <h4>Need Full Access?</h4>
+                <h4>How the Queue Works</h4>
             </div>
             <div class="info-card-body">
-                <p>Access the complete hospital management dashboard with advanced features and detailed reports.</p>
-                <a href="{{ url_for('switch_view', view='hospital') }}" class="info-card-btn">
-                    <i class="fas fa-arrow-right"></i>
-                    Open Hospital Dashboard
-                </a>
+                <p>Your token reserves your spot. The queue position updates as patients are seen. Arrive 10 minutes before your slot.</p>
+                <p style="margin-top:8px;">If you need to change your time, contact reception with your token number.</p>
             </div>
         </div>
     </div>
 
+    <!-- Admin/Staff Login Section -->
+    <div style="margin-top: 32px; padding: 24px; text-align: center; background: #f3f4f6; border-radius: 16px; border: 1px solid #d1d5db;">
+        <div style="margin-bottom: 16px;">
+            <i class="fas fa-user-shield" style="font-size: 48px; color: #6d28d9; margin-bottom: 12px;"></i>
+            <h3 style="color: #111827; margin-bottom: 8px; font-weight: 700;">Staff / Admin Access</h3>
+            <p style="color: #4b5563; margin-bottom: 20px;">Login to access hospital management features</p>
+        </div>
+        <a href="{{ url_for('login_page') }}" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; text-decoration: none; background: #6d28d9; color: white; border-radius: 8px; font-weight: 600;">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Login as Admin / Staff</span>
+        </a>
+    </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function loadMyAppointment() {
+        const statusEl = document.getElementById('appointmentStatus');
+        const dateEl = document.getElementById('appointmentDate');
+        const timeEl = document.getElementById('appointmentTime');
+        const deptEl = document.getElementById('appointmentDept');
+        const hintEl = document.getElementById('appointmentHint');
+        const queueEl = document.getElementById('queuePosition');
+        const tokenEl = document.getElementById('tokenNumber');
+
+        if (!statusEl) return;
+
+        const applyStatus = (label, tone) => {
+            statusEl.textContent = label;
+            statusEl.style.background = tone;
+        };
+
+        try {
+            const response = await fetch('/api/my-appointment', { credentials: 'same-origin' });
+            if (!response.ok) {
+                applyStatus('No booking yet', '#334155');
+                hintEl.textContent = 'Book an appointment to start tracking your spot in the queue.';
+                return;
+            }
+
+            const payload = await response.json();
+            if (!payload.success || !payload.appointment) {
+                applyStatus('No booking yet', '#334155');
+                hintEl.textContent = 'Book an appointment to start tracking your spot in the queue.';
+                return;
+            }
+
+            const appt = payload.appointment;
+            const status = (appt.status || 'Waiting').toLowerCase();
+
+            const toneMap = {
+                waiting: '#1d4ed8',
+                'in queue': '#a855f7',
+                'in consultation': '#f97316',
+                completed: '#22c55e'
+            };
+
+            applyStatus((appt.status || 'Waiting'), toneMap[status] || '#1d4ed8');
+            dateEl.textContent = appt.appointment_date || 'To be scheduled';
+            timeEl.textContent = appt.appointment_time || 'To be scheduled';
+            deptEl.textContent = appt.department || 'OPD';
+
+            if (appt.queue_position) {
+                const waitInfo = appt.estimated_wait_minutes ? ` (~${appt.estimated_wait_minutes} min wait)` : '';
+                queueEl.textContent = `Queue: #${appt.queue_position}${waitInfo}`;
+                hintEl.textContent = 'This is a read-only view. Actions are only for hospital staff.';
+            } else {
+                queueEl.textContent = 'Queue: awaiting assignment';
+                hintEl.textContent = 'We will assign your queue position soon. Please keep your token handy.';
+            }
+
+            if (appt.token_number) {
+                tokenEl.textContent = `Token: ${appt.token_number}`;
+            }
+        } catch (error) {
+            console.error('Unable to load appointment', error);
+            applyStatus('Unavailable', '#dc2626');
+            hintEl.textContent = 'We could not load your appointment right now. Please refresh.';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadMyAppointment);
+    // Auto-refresh the appointment card every 30 seconds
+    setInterval(loadMyAppointment, 30000);
+
+    // Search by Token or Name (with auto-refresh)
+    let tokenSearchTimer = null;
+    let tokenSearchQuery = null;
+    async function searchByToken() {
+        const searchInput = document.getElementById('searchInput');
+        const searchResult = document.getElementById('searchResult');
+        const searchError = document.getElementById('searchError');
+        const searchErrorText = document.getElementById('searchErrorText');
+        const lastUpdatedId = 'searchLastUpdated';
+        
+        const query = searchInput.value.trim();
+        if (!query) {
+            searchError.style.display = 'block';
+            searchErrorText.textContent = 'Please enter a token number or patient name';
+            searchResult.style.display = 'none';
+            return;
+        }
+
+        // Hide previous messages
+        searchError.style.display = 'none';
+        searchResult.style.display = 'none';
+
+        try {
+            // Determine if it's a token or name
+            const isToken = /^(TOK-?\d+|\d+)$/i.test(query);
+            const param = isToken ? `token=${encodeURIComponent(query)}` : `name=${encodeURIComponent(query)}`;
+            
+            const response = await fetch(`/api/queue-status-by-token?${param}`, { 
+                credentials: 'same-origin' 
+            });
+
+            if (!response.ok) {
+                throw new Error('Search failed');
+            }
+
+            const data = await response.json();
+
+            // API returns { success, token, data: { ...details } }
+            if (data.success && data.data) {
+                const info = data.data;
+                
+                // Update search result display
+                document.getElementById('searchToken').textContent = `Token: ${data.token || info.token_number || 'N/A'}`;
+                document.getElementById('searchPatient').textContent = info.patient_name || 'Not available';
+                document.getElementById('searchDept').textContent = info.department || 'OPD';
+                document.getElementById('searchDoctor').textContent = info.doctor_name || 'Not assigned';
+                document.getElementById('searchWait').textContent = info.estimated_wait_minutes != null ? 
+                    `${info.estimated_wait_minutes} min` : 'N/A';
+
+                // Status badge
+                const statusBadge = document.getElementById('searchStatusBadge');
+                const status = (info.status || 'Waiting').toLowerCase();
+                statusBadge.textContent = info.status || 'Waiting';
+                
+                const statusColors = {
+                    'waiting': { bg: '#bfdbfe', text: '#1e3a8a' },
+                    'in queue': { bg: '#e9d5ff', text: '#581c87' },
+                    'in consultation': { bg: '#fed7aa', text: '#9a3412' },
+                    'completed': { bg: '#bbf7d0', text: '#14532d' }
+                };
+                
+                const colors = statusColors[status] || { bg: '#e5e7eb', text: '#1f2937' };
+                statusBadge.style.background = colors.bg;
+                statusBadge.style.color = colors.text;
+
+                // Queue position
+                document.getElementById('searchQueuePos').textContent = info.queue_position != null ? 
+                    `Queue: #${info.queue_position}` : 'Queue: awaiting';
+
+                // Last updated label
+                let lastUpdated = document.getElementById(lastUpdatedId);
+                if (!lastUpdated) {
+                    lastUpdated = document.createElement('div');
+                    lastUpdated.id = lastUpdatedId;
+                    lastUpdated.style.marginTop = '8px';
+                    lastUpdated.style.fontSize = '12px';
+                    lastUpdated.style.color = '#6b7280';
+                    searchResult.querySelector('div[style*="border-left"]').appendChild(lastUpdated);
+                }
+                lastUpdated.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+
+                searchResult.style.display = 'block';
+
+                // Setup/refresh auto-refresh polling every 10s for same query
+                tokenSearchQuery = query;
+                if (tokenSearchTimer) clearInterval(tokenSearchTimer);
+                tokenSearchTimer = setInterval(() => {
+                    const current = (document.getElementById('searchInput')?.value || '').trim();
+                    if (!current || current !== tokenSearchQuery) {
+                        clearInterval(tokenSearchTimer);
+                        tokenSearchTimer = null;
+                        return;
+                    }
+                    // Fire and forget; rely on same function to update UI
+                    searchByToken().catch(() => {});
+                }, 10000);
+            } else {
+                searchError.style.display = 'block';
+                searchErrorText.textContent = data.message || 'No appointment found with that token or name';
+                if (tokenSearchTimer) { clearInterval(tokenSearchTimer); tokenSearchTimer = null; }
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            searchError.style.display = 'block';
+            searchErrorText.textContent = 'Unable to search. Please try again.';
+            if (tokenSearchTimer) { clearInterval(tokenSearchTimer); tokenSearchTimer = null; }
+        }
+    }
+
+    // Allow search on Enter key
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchByToken();
+                }
+            });
+        }
+        
+        // Start refreshing dashboard counts every 10 seconds
+        refreshDashboardCounts();
+        setInterval(refreshDashboardCounts, 10000);
+    });
+
+    // Real-time dashboard counts refresh
+    async function refreshDashboardCounts() {
+        try {
+            const response = await fetch('/api/dashboard/summary-public');
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            if (!data.success) return;
+
+            // Update stat elements with smooth transition
+            updateStat('stat-patients-today', data.patients_today);
+            updateStat('stat-in-queue', data.in_queue);
+            updateStat('stat-occupied-beds', data.occupied_beds);
+            updateStat('stat-total-beds-label', data.total_beds);
+            updateStat('stat-available-beds', data.total_beds - data.occupied_beds);
+        } catch (error) {
+            console.error('Failed to refresh dashboard counts:', error);
+        }
+    }
+
+    function updateStat(elementId, newValue) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const currentValue = element.textContent.trim();
+        const newValueStr = String(newValue).trim();
+        
+        if (currentValue !== newValueStr) {
+            element.style.transition = 'all 0.3s ease';
+            element.style.transform = 'scale(1.15)';
+            element.style.color = '#10b981';
+            element.textContent = newValue;
+            
+            setTimeout(() => {
+                element.style.transform = 'scale(1)';
+                element.style.color = '';
+            }, 300);
+        }
+    }
+</script>
 {% endblock %}

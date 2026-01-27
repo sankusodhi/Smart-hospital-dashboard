@@ -39,6 +39,16 @@
 
         <a href="{{ url_for('patient_registration') }}" class="sidebar-nav-item {% if request.endpoint == 'patient_registration' %}active{% endif %}">
             <i class="fas fa-user-plus"></i>
+            <span>Patient Registration</span>
+        </a>
+
+        <a href="{{ url_for('total_patients') }}" class="sidebar-nav-item {% if request.endpoint == 'total_patients' %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            <span>Total Patients</span>
+        </a>
+
+        <a href="{{ url_for('patient_management') }}" class="sidebar-nav-item {% if request.endpoint == 'patient_management' %}active{% endif %}">
+            <i class="fas fa-users-cog"></i>
             <span>Patient Management</span>
         </a>
 
@@ -52,7 +62,7 @@
             <span>OPD Queue</span>
         </a>
 
-        <a href="{{ url_for('hospital_view_dashboard') }}" class="sidebar-nav-item {% if request.endpoint == 'hospital_view_dashboard' %}active{% endif %}">
+        <a href="{{ url_for('reports') }}" class="sidebar-nav-item {% if request.endpoint == 'reports' %}active{% endif %}">
             <i class="fas fa-chart-line"></i>
             <span>Reports</span>
         </a>

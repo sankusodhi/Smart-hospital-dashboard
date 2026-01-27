@@ -69,4 +69,26 @@ INSERT INTO beds (bed_name, ward, status) VALUES
 ('SP-07', 'Semi-Private', 'Available'),
 ('SP-08', 'Semi-Private', 'Available'),
 ('SP-09', 'Semi-Private', 'Available'),
-('SP-10', 'Semi-Private', 'Available');
+('SP-10', 'Semi-Private', 'Available'),
+('SP-11', 'Semi-Private', 'Available'),
+('SP-12', 'Semi-Private', 'Available'),
+('SP-13', 'Semi-Private', 'Available'),
+('SP-14', 'Semi-Private', 'Available'),
+('SP-15', 'Semi-Private', 'Available'),
+('SP-16', 'Semi-Private', 'Available'),
+('SP-17', 'Semi-Private', 'Available'),
+('SP-18', 'Semi-Private', 'Available'),
+('SP-19', 'Semi-Private', 'Available'),
+('SP-20', 'Semi-Private', 'Available'),
+
+-- Private Ward
+('PVT-01', 'Private', 'Available'),
+('PVT-02', 'Private', 'Available'),
+('PVT-03', 'Private', 'Available'),
+('PVT-04', 'Private', 'Available'),
+('PVT-05', 'Private', 'Available'),
+('PVT-06', 'Private', 'Available'),
+('PVT-07', 'Private', 'Available'),
+('PVT-08', 'Private', 'Available'),
+('PVT-09', 'Private', 'Available'),
+('PVT-10', 'Private', 'Available');

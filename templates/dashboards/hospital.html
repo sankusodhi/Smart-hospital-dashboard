@@ -23,11 +23,11 @@
                 </div>
                 <div class="stat-content">
                     <h4>Total Patients</h4>
-                    <p class="stat-number-large">{{ patients_today }}</p>
+                    <p class="stat-number-large" id="stat-patients-today">{{ patients_today }}</p>
                     <span class="stat-description">Registered today</span>
                 </div>
                 <div class="stat-footer">
-                    <a href="{{ url_for('patient_registration') }}">View Details →</a>
+                    <a href="{{ url_for('total_patients') }}">View Details →</a>
                 </div>
             </div>
 
@@ -42,7 +42,7 @@
                 </div>
                 <div class="stat-content">
                     <h4>OPD Queue</h4>
-                    <p class="stat-number-large">{{ in_queue }}</p>
+                    <p class="stat-number-large" id="stat-in-queue">{{ in_queue }}</p>
                     <span class="stat-description">Patients waiting</span>
                 </div>
                 <div class="stat-footer">
@@ -61,8 +61,8 @@
                 </div>
                 <div class="stat-content">
                     <h4>Occupied Beds</h4>
-                    <p class="stat-number-large">{{ occupied_beds }}/{{ total_beds }}</p>
-                    <span class="stat-description">{{ ((occupied_beds/total_beds)*100)|round|int }}% Occupancy</span>
+                    <p class="stat-number-large" id="stat-occupied-beds">{{ occupied_beds }}/{{ total_beds }}</p>
+                    <span class="stat-description" id="stat-occupancy-rate">{{ ((occupied_beds/total_beds)*100)|round|int }}% Occupancy</span>
                 </div>
                 <div class="stat-footer">
                     <a href="{{ url_for('bed_management') }}">Manage Beds →</a>
@@ -80,11 +80,11 @@
                 </div>
                 <div class="stat-content">
                     <h4>Admissions</h4>
-                    <p class="stat-number-large">{{ occupied_beds }}</p>
+                    <p class="stat-number-large" id="stat-admissions">{{ occupied_beds }}</p>
                     <span class="stat-description">Current admissions</span>
                 </div>
                 <div class="stat-footer">
-                    <a href="{{ url_for('hospital_view_dashboard') }}">View Reports →</a>
+                    <a href="{{ url_for('reports') }}">View Reports →</a>
                 </div>
             </div>
         </div>
@@ -252,18 +252,7 @@
                     <i class="fas fa-chevron-right"></i>
                 </a>
 
-                <a href="{{ url_for('admission_page') }}" class="quick-link-item">
-                    <div class="quick-link-icon orange">
-                        <i class="fas fa-user-check"></i>
-                    </div>
-                    <div class="quick-link-text">
-                        <h5>Patient Admission</h5>
-                        <p>Admit & view patients</p>
-                    </div>
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-
-                <a href="{{ url_for('hospital_view_dashboard') }}" class="quick-link-item">
+                <a href="{{ url_for('reports') }}" class="quick-link-item">
                     <div class="quick-link-icon purple">
                         <i class="fas fa-chart-bar"></i>
                     </div>
@@ -278,4 +267,38 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Poll fresh counts so the dashboard stays live without reloads.
+    async function refreshDashboardCounts() {
+        try {
+            const res = await fetch('/api/dashboard/summary', { credentials: 'same-origin' });
+            const data = await res.json();
+            if (!data.success) return;
+
+            const total = data.total_beds || 0;
+            const occupied = data.occupied_beds || 0;
+            const occupancyPct = total > 0 ? Math.round((occupied / total) * 100) : 0;
+
+            const patientsTodayEl = document.getElementById('stat-patients-today');
+            const inQueueEl = document.getElementById('stat-in-queue');
+            const occupiedBedsEl = document.getElementById('stat-occupied-beds');
+            const occupancyRateEl = document.getElementById('stat-occupancy-rate');
+            const admissionsEl = document.getElementById('stat-admissions');
+
+            if (patientsTodayEl) patientsTodayEl.textContent = data.patients_today ?? '-';
+            if (inQueueEl) inQueueEl.textContent = data.in_queue ?? '-';
+            if (occupiedBedsEl) occupiedBedsEl.textContent = `${occupied}/${total || '-'}`;
+            if (occupancyRateEl) occupancyRateEl.textContent = `${occupancyPct}% Occupancy`;
+            if (admissionsEl) admissionsEl.textContent = occupied;
+        } catch (err) {
+            console.warn('Dashboard refresh failed', err);
+        }
+    }
+
+    refreshDashboardCounts();
+    setInterval(refreshDashboardCounts, 10000);
+</script>
 {% endblock %}

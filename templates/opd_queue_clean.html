@@ -545,17 +545,17 @@
                 <p>All Departments</p>
             </div>
             <div class="status-badges">
-                <div class="status-badge badge-waiting">
+                <div class="status-badge badge-waiting" onclick="filterByStatus('Waiting')" style="cursor: pointer; user-select: none;">
                     <span class="badge-dot"></span>
-                    <span><span class="badge-count">5</span> Waiting</span>
+                    <span><span class="badge-count" id="waitingCount">5</span> Waiting</span>
                 </div>
-                <div class="status-badge badge-consulting">
+                <div class="status-badge badge-consulting" onclick="filterByStatus('In Consultation')" style="cursor: pointer; user-select: none;">
                     <span class="badge-dot"></span>
-                    <span><span class="badge-count">2</span> In Consultation</span>
+                    <span><span class="badge-count" id="consultingCount">2</span> In Consultation</span>
                 </div>
-                <div class="status-badge badge-completed">
+                <div class="status-badge badge-completed" onclick="filterByStatus('Completed')" style="cursor: pointer; user-select: none;">
                     <span class="badge-dot"></span>
-                    <span><span class="badge-count">8</span> Completed</span>
+                    <span><span class="badge-count" id="completedCount">8</span> Completed</span>
                 </div>
             </div>
         </header>
@@ -801,5 +801,17 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function filterByStatus(status) {
+            // This is a placeholder for now. In a real app, this would filter the queue
+            // For now, just show an alert indicating which filter is selected
+            let message = status === 'all' ? 'Showing all patients' : `Showing ${status} patients`;
+            console.log(message);
+            
+            // You could trigger an API call here to fetch filtered patients
+            // fetch(`/api/opd-queue?status=${status}`).then(...)
+        }
+    </script>
 </body>
 </html>

@@ -77,6 +77,12 @@
             border-radius: 10px;
             text-align: center;
             border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         .stat-card.waiting {
@@ -310,6 +316,56 @@
             transform: scale(1.05);
         }
 
+        .btn-admit {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .btn-admit:hover {
+            background: #e56a00;
+            transform: scale(1.05);
+        }
+
+        .btn-skip {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-skip:hover {
+            background: #5a6268;
+            transform: scale(1.05);
+        }
+
+        .btn-discharge {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-discharge:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .action-loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .btn-complete {
+            background: #198754;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #157347;
+            transform: scale(1.05);
+        }
+
         .btn-skip {
             background: #6c757d;
             color: white;
@@ -400,6 +456,90 @@
             margin-top: 10px;
         }
 
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 95%;
+            max-width: 1000px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 2em;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 20px 25px;
+        }
+
+        #patientDetailsTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        #patientDetailsTable th,
+        #patientDetailsTable td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #patientDetailsTable th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+
+        #patientDetailsTable tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        #patientDetailsTable tbody tr:nth-child(even) {
+            background: #f5f7fa;
+        }
+
         @media (max-width: 768px) {
             .queue-grid {
                 grid-template-columns: 1fr;
@@ -413,6 +553,10 @@
                 flex-direction: column;
             }
         }
+        /* Force-hide action buttons in public view */
+        {% if not is_admin %}
+        .action-buttons { display: none !important; }
+        {% endif %}
     </style>
 </head>
 <body>
@@ -425,20 +569,25 @@
                     <h1>🏥 Advanced OPD Queue Management</h1>
                 </div>
             </div>
+            {% if not is_admin %}
+            <div class="alert info" style="margin-top:10px;">
+                👁️ Public View: Read-only. Actions are hidden for guests.
+            </div>
+            {% endif %}
             <div class="stats-row">
-                <div class="stat-card total">
+                <div class="stat-card total" onclick="filterByStatus('all')" style="cursor: pointer; transition: transform 0.2s; user-select: none;">
                     <h3 id="totalPatients">0</h3>
-                    <p>Total Today</p>
+                    <p>📊 Total Today</p>
                 </div>
-                <div class="stat-card waiting">
+                <div class="stat-card waiting" onclick="filterByStatus('Waiting')" style="cursor: pointer; transition: transform 0.2s; user-select: none;">
                     <h3 id="waitingCount">0</h3>
                     <p>⏳ Waiting</p>
                 </div>
-                <div class="stat-card consulting">
+                <div class="stat-card consulting" onclick="filterByStatus('In Consultation')" style="cursor: pointer; transition: transform 0.2s; user-select: none;">
                     <h3 id="consultingCount">0</h3>
                     <p>👨‍⚕️ In Consultation</p>
                 </div>
-                <div class="stat-card completed">
+                <div class="stat-card completed" onclick="filterByStatus('Completed')" style="cursor: pointer; transition: transform 0.2s; user-select: none;">
                     <h3 id="completedCount">0</h3>
                     <p>✅ Completed</p>
                 </div>
@@ -471,6 +620,32 @@
             <button class="btn-refresh" onclick="loadQueue()">🔄 Refresh Queue</button>
         </div>
 
+        <!-- Bed Availability (Public Read-only) -->
+        <div class="queue-section" style="margin-top:20px;">
+            <h2>🛏️ Bed Availability</h2>
+            <div class="stats-row" style="margin-bottom:15px;">
+                <div class="stat-card total">
+                    <h3 id="bedsTotal">0</h3>
+                    <p>Total Beds</p>
+                </div>
+                <div class="stat-card completed">
+                    <h3 id="bedsAvailable">0</h3>
+                    <p>Available</p>
+                </div>
+                <div class="stat-card consulting">
+                    <h3 id="bedsOccupied">0</h3>
+                    <p>Occupied</p>
+                </div>
+            </div>
+            <div class="queue-grid" id="bedSummaryGrid">
+                <div class="empty-state">
+                    <div class="icon">🛏️</div>
+                    <h3>Loading beds...</h3>
+                    <p>Please wait while we fetch availability</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Alert Container -->
         <div id="alertContainer"></div>
 
@@ -484,17 +659,50 @@
                 </div>
             </div>
         </div>
+
+        <!-- Patient Details Modal -->
+        <div id="patientDetailsModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2>📋 Total Patient Details</h2>
+                    <button class="modal-close" onclick="closePatientDetailsModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <table id="patientDetailsTable" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #667eea; color: white; padding: 12px;">
+                                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Token</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Patient Name</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Age</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Department</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Doctor</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Status</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Registered At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientDetailsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         let allPatients = [];
         let currentDepartment = 'All Departments';
         let currentStatusFilter = 'all';
+        const isAdminUser = {{ 'true' if is_admin else 'false' }};
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Is Admin User:', isAdminUser);
             loadQueue();
-            setInterval(loadQueue, 30000); // Auto-refresh every 30 seconds
+            loadBedSummary();
+            // Real-time auto-refresh: every 10 seconds for admin, 30 seconds for public
+            const refreshInterval = isAdminUser ? 10000 : 30000;
+            setInterval(loadQueue, refreshInterval);
+            setInterval(loadBedSummary, 60000); // Refresh beds every 60 seconds
         });
 
         function loadQueue() {
@@ -506,12 +714,85 @@
                     allPatients = data.patients || [];
                     updateStats(data.counts);
                     filterPatients();
+                    // Auto-refresh every 15 seconds for real-time updates
+                    setTimeout(() => {}, 5000); // Faster refresh for real-time
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     showAlert('Failed to load queue data', 'error');
                 });
         }
+
+        function filterByStatus(status) {
+            // If "all" status is clicked, show detailed modal instead of just filtering
+            if (status === 'all') {
+                showPatientDetailsModal();
+            } else {
+                // Otherwise filter the queue view
+                const statusSelect = document.getElementById('statusFilter');
+                statusSelect.value = status;
+                filterPatients();
+            }
+        }
+
+        function showPatientDetailsModal() {
+            const modal = document.getElementById('patientDetailsModal');
+            const tbody = document.getElementById('patientDetailsTableBody');
+            tbody.innerHTML = '';
+
+            if (allPatients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No patients found</td></tr>';
+                modal.style.display = 'flex';
+                return;
+            }
+
+            // Populate table with all patients
+            allPatients.forEach(patient => {
+                const row = document.createElement('tr');
+                const registeredDate = new Date(patient.created_at);
+                const formattedDate = registeredDate.toLocaleString('en-IN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                row.innerHTML = `
+                    <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; color: #667eea;">${patient.token_id || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">${patient.name}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">${patient.age}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">${patient.department || '-'}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">${patient.assigned_doctor || 'Not Assigned'}</td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">
+                        <span style="padding: 4px 8px; border-radius: 4px; font-weight: 600;
+                            ${patient.status === 'Waiting' ? 'background: #fff3cd; color: #856404;' : ''}
+                            ${patient.status === 'In Consultation' ? 'background: #cfe2ff; color: #084298;' : ''}
+                            ${patient.status === 'Completed' ? 'background: #d1e7dd; color: #0f5132;' : ''}
+                        ">
+                            ${patient.status}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; border: 1px solid #ddd;">${formattedDate}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        function closePatientDetailsModal() {
+            const modal = document.getElementById('patientDetailsModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('patientDetailsModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
 
         function filterPatients() {
             currentStatusFilter = document.getElementById('statusFilter').value;
@@ -555,40 +836,52 @@
 
             if (patient.status === 'Waiting') {
                 statusBadge = '<span class="status-badge waiting">⏳ Waiting</span>';
-                actionButtons = `
-                    <div class="action-buttons">
-                        <button class="btn btn-start" onclick="startConsultation(${patient.id}, '${patient.name}')">
-                            Start Consult
-                        </button>
-                        <button class="btn btn-skip" onclick="cancelConsultation(${patient.id}, '${patient.name}')">
-                            Cancel
-                        </button>
-                    </div>
-                `;
+                if (isAdminUser) {
+                    actionButtons = `
+                        <div class="action-buttons">
+                            <button class="btn btn-start" onclick="startConsultation(${patient.id}, '${patient.name}')">
+                                Start Consult
+                            </button>
+                            <button class="btn btn-skip" onclick="assignDoctor(${patient.id}, '${patient.name}', '${patient.assigned_doctor || ''}')">
+                                Assign Doctor
+                            </button>
+                            <button class="btn btn-skip" onclick="cancelConsultation(${patient.id}, '${patient.name}')">
+                                Cancel
+                            </button>
+                        </div>
+                    `;
+                }
             } else if (patient.status === 'In Consultation') {
                 statusBadge = '<span class="status-badge consulting">👨‍⚕️ In Consultation</span>';
-                actionButtons = `
-                    <div class="action-buttons">
-                        <button class="btn btn-complete" onclick="completeConsultation(${patient.id}, '${patient.name}')">
-                            ✓ Complete
-                        </button>
-                        <button class="btn btn-admit" onclick="admitPatient(${patient.id}, '${patient.name}')">
-                            Admit
-                        </button>
-                        <button class="btn btn-skip" onclick="cancelConsultation(${patient.id}, '${patient.name}')">
-                            Cancel
-                        </button>
-                    </div>
-                `;
+                if (isAdminUser) {
+                    actionButtons = `
+                        <div class="action-buttons">
+                            <button class="btn btn-complete" onclick="completeConsultation(${patient.id}, '${patient.name}')">
+                                ✓ Complete
+                            </button>
+                            <button class="btn btn-admit" onclick="admitPatient(${patient.id}, '${patient.name}')">
+                                Admit
+                            </button>
+                            <button class="btn btn-skip" onclick="assignDoctor(${patient.id}, '${patient.name}', '${patient.assigned_doctor || ''}')">
+                                Assign Doctor
+                            </button>
+                            <button class="btn btn-skip" onclick="cancelConsultation(${patient.id}, '${patient.name}')">
+                                Cancel
+                            </button>
+                        </div>
+                    `;
+                }
             } else if (patient.status === 'Completed') {
                 statusBadge = '<span class="status-badge completed">✅ Completed</span>';
-                actionButtons = `
-                    <div class="action-buttons">
-                        <button class="btn btn-admit" onclick="dischargePatient(${patient.id}, '${patient.name}')">
-                            Discharge
-                        </button>
-                    </div>
-                `;
+                if (isAdminUser) {
+                    actionButtons = `
+                        <div class="action-buttons">
+                            <button class="btn btn-admit" onclick="dischargePatient(${patient.id}, '${patient.name}')">
+                                Discharge
+                            </button>
+                        </div>
+                    `;
+                }
             }
 
             const createdDate = new Date(patient.created_at);
@@ -601,7 +894,7 @@
                     <h3>👤 ${patient.name}</h3>
                     <p><span class="icon">🎂</span>Age: ${patient.age} years</p>
                     <p><span class="icon">🏥</span>Department: ${patient.department || 'N/A'}</p>
-                    ${patient.assigned_doctor ? `<p><span class="icon">👨‍⚕️</span>Doctor: ${patient.assigned_doctor}</p>` : ''}
+                    ${patient.assigned_doctor ? `<p><span class="icon">👨‍⚕️</span>Doctor: ${patient.assigned_doctor}</p>` : '<p><span class="icon">👨‍⚕️</span>Doctor: <em>Not assigned</em></p>'}
                     <div class="time-info">⏰ Registered: ${timeAgo}</div>
                 </div>
                 ${actionButtons}
@@ -610,8 +903,83 @@
             return card;
         }
 
+        // =============== Bed Availability (Public) ===============
+        function loadBedSummary() {
+            fetch('/api/all-beds')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) throw new Error('Failed to load beds');
+                    const beds = data.beds || [];
+                    updateBedTotals(beds);
+                    renderBedGrid(beds);
+                })
+                .catch(err => {
+                    console.error('Bed summary error:', err);
+                    const grid = document.getElementById('bedSummaryGrid');
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">⚠️</div>
+                            <h3>Unable to load beds</h3>
+                            <p>Please try again later</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function updateBedTotals(beds) {
+            const total = beds.length;
+            const occupied = beds.filter(b => (b.status || '').toLowerCase() !== 'available').length;
+            const available = total - occupied;
+            document.getElementById('bedsTotal').textContent = total;
+            document.getElementById('bedsAvailable').textContent = available;
+            document.getElementById('bedsOccupied').textContent = occupied;
+        }
+
+        function renderBedGrid(beds) {
+            const grid = document.getElementById('bedSummaryGrid');
+            if (!beds.length) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🛏️</div>
+                        <h3>No beds found</h3>
+                        <p>Bed data is currently unavailable</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group by ward
+            const byWard = {};
+            beds.forEach(b => {
+                const ward = b.ward || 'General';
+                byWard[ward] = byWard[ward] || { total: 0, available: 0 };
+                byWard[ward].total += 1;
+                if ((b.status || '').toLowerCase() === 'available') byWard[ward].available += 1;
+            });
+
+            grid.innerHTML = '';
+            Object.entries(byWard).forEach(([ward, stats]) => {
+                const card = document.createElement('div');
+                card.className = 'patient-card';
+                card.style.background = 'linear-gradient(135deg,#f8fafc 0%, #eef2ff 100%)';
+                card.style.borderColor = '#93c5fd';
+                card.innerHTML = `
+                    <div class="status-badge consulting">🏥 ${ward}</div>
+                    <div class="patient-info">
+                        <h3>Beds: ${stats.available}/${stats.total} available</h3>
+                        <p class="time-info">Updated just now</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
         function startConsultation(patientId, patientName) {
             if (!confirm(`Start consultation for ${patientName}?`)) return;
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Starting...';
 
             fetch(`/start-consultation/${patientId}`, {
                 method: 'POST'
@@ -620,19 +988,27 @@
             .then(data => {
                 if (data.success) {
                     showAlert(`✅ Consultation started for ${patientName}`, 'success');
-                    loadQueue();
+                    loadQueue(); // Refresh immediately
                 } else {
                     showAlert('❌ Failed to start consultation', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Start Consult';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showAlert('❌ Failed to start consultation', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Start Consult';
             });
         }
 
         function completeConsultation(patientId, patientName) {
             if (!confirm(`Mark consultation as complete for ${patientName}?`)) return;
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = 'Completing...';
 
             fetch(`/complete-consultation/${patientId}`, {
                 method: 'POST'
@@ -644,11 +1020,47 @@
                     loadQueue();
                 } else {
                     showAlert('❌ Failed to complete consultation', 'error');
+                    btn.disabled = false;
+                    btn.textContent = '✓ Complete';
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 showAlert('❌ Failed to complete consultation', 'error');
+                btn.disabled = false;
+                btn.textContent = '✓ Complete';
+            });
+        }
+
+        function assignDoctor(patientId, patientName, currentDoctor) {
+            const existing = (currentDoctor || '').trim();
+            const name = prompt(`Assign doctor for ${patientName}:`, existing || 'On Duty');
+            if (!name) return;
+            const btn = event.target;
+            btn.disabled = true;
+            const original = btn.textContent;
+            btn.textContent = 'Assigning...';
+            fetch(`/assign-doctor/${patientId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ doctor_name: name })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(`✅ Doctor assigned: ${data.doctor_name}`, 'success');
+                    loadQueue();
+                } else {
+                    showAlert(data.message || 'Failed to assign doctor', 'error');
+                    btn.disabled = false;
+                    btn.textContent = original;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showAlert('Failed to assign doctor', 'error');
+                btn.disabled = false;
+                btn.textContent = original;
             });
         }
 
@@ -658,9 +1070,38 @@
         }
 
         function admitPatient(patientId, patientName) {
-            if (confirm(`Admit ${patientName} to hospital?`)) {
-                // Redirect to bed assignment with patient context
-                window.location.href = `/assign-bed/${patientId}`;
+            const bedLabel = prompt(`Enter bed assignment for ${patientName}:`, 'GEN-NA');
+            if (!bedLabel) return;
+            
+            if (confirm(`Admit ${patientName} to bed ${bedLabel}?`)) {
+                const btn = event.target;
+                btn.disabled = true;
+                btn.textContent = 'Admitting...';
+                
+                fetch(`/admit-patient/${patientId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ bed_label: bedLabel })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert(`✅ ${patientName} admitted to bed ${data.bed_number || bedLabel}`, 'success');
+                        loadQueue();
+                    } else {
+                        showAlert('❌ Failed to admit patient: ' + (data.message || 'Unknown error'), 'error');
+                        btn.disabled = false;
+                        btn.textContent = 'Admit';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('❌ Failed to admit patient', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Admit';
+                });
             }
         }
 
@@ -692,16 +1133,15 @@
         function dischargePatient(patientId, patientName) {
             if (!confirm(`Discharge ${patientName}?`)) return;
 
-            fetch('/discharge-patient', {
+            fetch('/discharge-patient/' + patientId, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ patient_id: patientId })
+                }
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
+                if (data.success === true) {
                     showAlert(`✅ Discharged ${patientName}`, 'success');
                     loadQueue();
                 } else {

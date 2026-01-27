@@ -508,6 +508,18 @@
         </div>
     </div>
 
+    <!-- Bed Details Modal -->
+    <div id="bedDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeBedDetails()">&times;</span>
+            <div class="modal-header">Bed & Patient Details</div>
+            <div class="modal-body" id="bedDetailsBody"></div>
+            <div class="modal-footer">
+                <button class="btn-info" style="width:100%;" onclick="closeBedDetails()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let selectedPatient = null;
         let selectedBed = null;
@@ -572,7 +584,7 @@
             bedsGrid.innerHTML = '';
 
             beds.forEach(bed => {
-                const isOccupied = bed.status === 'Occupied';
+                const isOccupied = (bed.status || '').toLowerCase() === 'occupied';
                 const bedCard = document.createElement('div');
                 bedCard.className = `bed-card ${isOccupied ? 'occupied' : 'available'}`;
                 
@@ -591,7 +603,7 @@
                             <p style="margin: 3px 0; font-size: 0.85em; color: #555;">👨‍⚕️ ${bed.assigned_doctor || 'Dr. On Duty'}</p>
                         </div>
                         <div class="btn-group">
-                            <button class="btn-discharge" onclick="dischargeBed(${bed.id}, '${bed.bed_name}', '${bed.patient_name}')">
+                            <button class="btn-discharge" onclick="event.stopPropagation(); dischargeBed(${bed.id}, '${bed.bed_name}', '${bed.patient_name}')">
                                 Discharge
                             </button>
                         </div>
@@ -607,6 +619,9 @@
                 }
                 
                 bedCard.innerHTML = bedContent;
+                if (isOccupied) {
+                    bedCard.onclick = () => showBedDetails(bed);
+                }
                 bedsGrid.appendChild(bedCard);
             });
 
@@ -719,6 +734,28 @@
             }
             updateSelectedPatientInfo();
             document.getElementById('assignModal').style.display = 'block';
+        }
+
+        // ============= Bed Details Modal =============
+        function showBedDetails(bed) {
+            const body = document.getElementById('bedDetailsBody');
+            const admission = bed.admission_date ? new Date(bed.admission_date).toLocaleString() : 'N/A';
+            body.innerHTML = `
+                <p><strong>Bed:</strong> ${bed.bed_name} (${bed.ward || 'Ward'})</p>
+                <p><strong>Status:</strong> ${bed.status || 'Occupied'}</p>
+                <hr style="margin: 12px 0; border: 0; border-top: 1px solid #e2e8f0;">
+                <p><strong>Patient:</strong> ${bed.patient_name || 'N/A'}</p>
+                <p><strong>Age:</strong> ${bed.patient_age || 'N/A'}</p>
+                <p><strong>Department:</strong> ${bed.patient_department || 'N/A'}</p>
+                <p><strong>Doctor:</strong> ${bed.assigned_doctor || 'Not assigned'}</p>
+                <p><strong>Phone:</strong> ${bed.patient_phone || 'N/A'}</p>
+                <p><strong>Admission Date:</strong> ${admission}</p>
+            `;
+            document.getElementById('bedDetailsModal').style.display = 'block';
+        }
+
+        function closeBedDetails() {
+            document.getElementById('bedDetailsModal').style.display = 'none';
         }
 
         function closeModal() {

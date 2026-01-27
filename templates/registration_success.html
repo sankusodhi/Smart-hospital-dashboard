@@ -216,14 +216,29 @@
                 <span class="info-label">Patient ID:</span>
                 <span class="info-value">{% if patient_id %}#{{ patient_id }}{% else %}N/A{% endif %}</span>
             </div>
+            <div class="info-row">
+                <span class="info-label">Appointment Date:</span>
+                <span class="info-value">{{ appointment_date if appointment_date else 'Scheduled at desk' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Appointment Time:</span>
+                <span class="info-value">{{ appointment_time if appointment_time else 'To be confirmed' }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Queue Position:</span>
+                <span class="info-value">{{ queue_position if queue_position else 'We will notify you' }}</span>
+            </div>
         </div>
 
         <div class="warning-box">
-            📝 <strong>Important:</strong> Please save your token number. You'll need it for check-in at the OPD or bed admission.
+            📝 <strong>Important:</strong> Please save your token number. You'll need it for check-in at the OPD or bed admission. Arrive a few minutes before your scheduled time.
         </div>
 
         <div class="action-buttons">
-            <a href="/bed-management" class="btn btn-primary">View Bed Availability</a>
+            {% if session.get('role') in ['Admin', 'Doctor', 'Receptionist'] %}
+            <a href="/opd-queue-advanced" class="btn btn-primary">Assign / Manage Queue</a>
+            {% endif %}
+            <a href="/view-beds-public" class="btn btn-primary">View Bed Availability</a>
             <a href="/" class="btn btn-secondary">Go to Home</a>
         </div>
     </div>

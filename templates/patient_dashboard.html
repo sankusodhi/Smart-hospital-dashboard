@@ -37,41 +37,39 @@
 
                 <!-- Dropdown Menu -->
                 <div class="dropdown-menu" id="userDropdown">
-                    <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Admin/Receptionist">
-                        <i class="fas fa-user-shield"></i>
-                        <span>Admin / Receptionist</span>
+                    <a class="dropdown-item" href="{{ url_for('login_page') }}">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Admin Login</span>
                     </a>
-                    <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Doctor View">
-                        <i class="fas fa-stethoscope"></i>
-                        <span>Doctor View</span>
+                    {% if session.get('user_id') %}
+                    <a class="dropdown-item" href="{{ url_for('logout') }}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
                     </a>
-                    <a class="dropdown-item" href="{{ url_for('switch_role') }}?role=Public View">
-                        <i class="fas fa-globe"></i>
-                        <span>Public View</span>
-                    </a>
+                    {% endif %}
                 </div>
             </div>
 
             <!-- Navigation Menu -->
             <nav class="nav-menu">
-                <a href="{{ url_for('index') }}" class="nav-item active">
+                <a href="{{ url_for('patient_view_dashboard') }}" class="nav-item active">
                     <i class="fas fa-th-large"></i>
-                    <span>Home</span>
+                    <span>Dashboard</span>
                 </a>
 
-                <a href="{{ url_for('bed_management') }}" class="nav-item">
-                    <i class="fas fa-bed"></i>
-                    <span>Bed Management</span>
+                <a href="{{ url_for('my_appointments') }}" class="nav-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>My Appointments</span>
                 </a>
 
                 <a href="{{ url_for('patient_registration') }}" class="nav-item">
                     <i class="fas fa-user-plus"></i>
-                    <span>Registration</span>
+                    <span>Book Appointment</span>
                 </a>
 
-                <a href="{{ url_for('opd_queue') }}" class="nav-item">
+                <a href="{{ url_for('opd_queue_advanced', public=1) }}" class="nav-item">
                     <i class="fas fa-clipboard-list"></i>
-                    <span>OPD Queue</span>
+                    <span>View OPD Queue</span>
                 </a>
             </nav>
 
@@ -83,7 +81,7 @@
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main class="main-content">
+        <main class="main-content" id="appointment-tracker">
             <!-- Header -->
             <header class="dashboard-header">
                 <div class="header-content">
@@ -92,8 +90,7 @@
                 </div>
                 <div class="info-banner">
                     <i class="fas fa-info-circle"></i>
-                    <span>View hospital operations</span>
-                    <a href="{{ url_for('hospital_view_dashboard') }}">Open Hospital Dashboard →</a>
+                    <span>Track your appointment and queue status here.</span>
                 </div>
             </header>
 
@@ -103,35 +100,83 @@
                     <!-- Patients Today -->
                     <div class="stat-card">
                         <div class="stat-icon">👥</div>
-                        <div class="stat-value">{{ patients_today }}</div>
+                        <div class="stat-value" id="stat-patients-today">{{ patients_today }}</div>
                         <div class="stat-label">Patients Today</div>
                     </div>
 
                     <!-- In Queue -->
                     <div class="stat-card">
                         <div class="stat-icon">⏳</div>
-                        <div class="stat-value">{{ in_queue }}</div>
+                        <div class="stat-value" id="stat-in-queue">{{ in_queue }}</div>
                         <div class="stat-label">In Queue</div>
                     </div>
 
                     <!-- Occupied Beds -->
                     <div class="stat-card">
                         <div class="stat-icon">🛏️</div>
-                        <div class="stat-value">{{ occupied_beds }}</div>
+                        <div class="stat-value" id="stat-occupied-beds">{{ occupied_beds }}</div>
                         <div class="stat-label">Occupied Beds</div>
+                    </div>
+
+                    <!-- Available Beds -->
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="stat-available-beds">{{ total_beds - occupied_beds }}</div>
+                        <div class="stat-label">Available Beds</div>
                     </div>
 
                     <!-- Total Beds -->
                     <div class="stat-card">
                         <div class="stat-icon">🏥</div>
-                        <div class="stat-value">{{ total_beds }}</div>
+                        <div class="stat-value" id="stat-total-beds">{{ total_beds }}</div>
                         <div class="stat-label">Total Beds</div>
+                    </div>
+
+                    <!-- Bed Occupancy -->
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value" id="stat-occupancy-rate">{{ bed_occupancy_rate }}%</div>
+                        <div class="stat-label">Bed Occupancy</div>
                     </div>
                 </div>
             </section>
 
             <!-- Recent Patients Table Section -->
             <section class="table-section">
+                <!-- My Appointments / Queue Tracker -->
+                <div class="table-header">
+                    <h2>My Appointments / Queue</h2>
+                </div>
+                <div class="table-container" style="margin-bottom: 24px;">
+                    <div class="appointment-card" style="background:#0f172a; color:#e2e8f0; border-radius:12px; padding:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="background:#1d4ed8; padding:8px 12px; border-radius:8px; font-weight:700;" id="pdAppointmentStatus">No booking yet</div>
+                                <div style="font-size:13px; color:#94a3b8;" id="pdQueuePosition">Queue: -</div>
+                            </div>
+                            <div style="font-size:13px; color:#cbd5e1;" id="pdTokenNumber">Token: -</div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-top:12px;">
+                            <div style="background:#111827; padding:10px; border-radius:10px;">
+                                <div style="font-size:12px; color:#94a3b8;">Appointment Date</div>
+                                <div style="font-weight:700; font-size:14px;" id="pdAppointmentDate">-</div>
+                            </div>
+                            <div style="background:#111827; padding:10px; border-radius:10px;">
+                                <div style="font-size:12px; color:#94a3b8;">Appointment Time</div>
+                                <div style="font-weight:700; font-size:14px;" id="pdAppointmentTime">-</div>
+                            </div>
+                            <div style="background:#111827; padding:10px; border-radius:10px;">
+                                <div style="font-size:12px; color:#94a3b8;">Department</div>
+                                <div style="font-weight:700; font-size:14px;" id="pdAppointmentDept">-</div>
+                            </div>
+                            <div style="background:#111827; padding:10px; border-radius:10px;">
+                                <div style="font-size:12px; color:#94a3b8;">Doctor</div>
+                                <div style="font-weight:700; font-size:14px;" id="pdDoctorName">-</div>
+                            </div>
+                        </div>
+                        <div id="pdAppointmentHint" style="margin-top:10px; font-size:12px; color:#cbd5e1;">Book an appointment to see your live queue status.</div>
+                    </div>
+                </div>
                 <div class="table-header">
                     <h2>Recent Patients</h2>
                     <div class="table-controls">
@@ -345,6 +390,115 @@
                 displayTable();
             }
         });
+    </script>
+    <script>
+        // Auto-updating appointment tracker (patient-specific)
+        async function loadMyAppointmentPD() {
+            const statusEl = document.getElementById('pdAppointmentStatus');
+            if (!statusEl) return;
+            const dateEl = document.getElementById('pdAppointmentDate');
+            const timeEl = document.getElementById('pdAppointmentTime');
+            const deptEl = document.getElementById('pdAppointmentDept');
+            const doctorEl = document.getElementById('pdDoctorName');
+            const hintEl = document.getElementById('pdAppointmentHint');
+            const queueEl = document.getElementById('pdQueuePosition');
+            const tokenEl = document.getElementById('pdTokenNumber');
+
+            const applyStatus = (label, tone) => {
+                statusEl.textContent = label;
+                statusEl.style.background = tone;
+            };
+
+            try {
+                const response = await fetch('/api/my-appointment', { credentials: 'same-origin' });
+                if (!response.ok) {
+                    applyStatus('No booking yet', '#334155');
+                    hintEl.textContent = 'Please register or login to view your appointments.';
+                    return;
+                }
+                const payload = await response.json();
+                if (!payload.success || !payload.appointment) {
+                    applyStatus('No booking yet', '#334155');
+                    hintEl.textContent = 'Please register or login to view your appointments.';
+                    return;
+                }
+                const appt = payload.appointment;
+                const rawStatus = (appt.status || 'Waiting');
+                const canonical = rawStatus.toLowerCase();
+                const displayStatus = canonical === 'in consultation' ? 'In Queue' : rawStatus;
+                const toneMap = {
+                    waiting: '#1d4ed8',
+                    'in queue': '#a855f7',
+                    completed: '#22c55e'
+                };
+                applyStatus(displayStatus, toneMap[displayStatus.toLowerCase()] || '#1d4ed8');
+                dateEl.textContent = appt.appointment_date || '—';
+                timeEl.textContent = appt.appointment_time || '—';
+                deptEl.textContent = appt.department || '—';
+                doctorEl.textContent = appt.doctor_name || 'To be assigned';
+                if (appt.queue_position) {
+                    const waitInfo = appt.estimated_wait_minutes ? 
+                        ` (~${appt.estimated_wait_minutes} min wait)` : '';
+                    queueEl.textContent = `Queue: #${appt.queue_position}${waitInfo}`;
+                    hintEl.textContent = 'We refresh your position automatically.';
+                } else {
+                    queueEl.textContent = 'Queue: awaiting assignment';
+                    hintEl.textContent = 'We will assign your queue position soon.';
+                }
+                if (appt.token_number) tokenEl.textContent = `Token: ${appt.token_number}`;
+            } catch (e) {
+                applyStatus('Unavailable', '#dc2626');
+                hintEl.textContent = 'Could not load your appointment. Please refresh.';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMyAppointmentPD();
+            setInterval(loadMyAppointmentPD, 30000);
+            
+            // Start refreshing dashboard counts every 10 seconds
+            refreshDashboardCounts();
+            setInterval(refreshDashboardCounts, 10000);
+        });
+
+        // Real-time dashboard counts refresh
+        async function refreshDashboardCounts() {
+            try {
+                const response = await fetch('/api/dashboard/summary-public');
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                if (!data.success) return;
+
+                // Update stat elements with smooth transition
+                updateStat('stat-patients-today', data.patients_today);
+                updateStat('stat-in-queue', data.in_queue);
+                updateStat('stat-occupied-beds', data.occupied_beds);
+                updateStat('stat-total-beds', data.total_beds);
+                updateStat('stat-available-beds', data.total_beds - data.occupied_beds);
+                updateStat('stat-occupancy-rate', data.bed_occupancy_rate + '%');
+            } catch (error) {
+                console.error('Failed to refresh dashboard counts:', error);
+            }
+        }
+
+        function updateStat(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const currentValue = element.textContent.replace('%', '').trim();
+            const newValueStr = String(newValue).replace('%', '').trim();
+            
+            if (currentValue !== newValueStr) {
+                element.style.transition = 'all 0.3s ease';
+                element.style.transform = 'scale(1.1)';
+                element.textContent = newValue;
+                
+                setTimeout(() => {
+                    element.style.transform = 'scale(1)';
+                }, 300);
+            }
+        }
     </script>
 </body>
 </html>

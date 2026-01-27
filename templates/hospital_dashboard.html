@@ -279,7 +279,15 @@
                     <option>Orthopedics</option>
                     <option>Pediatrics</option>
                 </select>
-                <a class="button" href="/switch-role?role=Admin/Receptionist"><i class="fa-solid fa-arrows-rotate"></i> Switch Role</a>
+                <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
+                    <label style="font-size:12px; color:#94a3b8; font-weight:600;">Switch Role</label>
+                    <select class="select" aria-label="Switch Role" onchange="if(this.value){window.location='/switch-role?role='+encodeURIComponent(this.value);}">
+                        <option value="">Choose role</option>
+                        <option value="Admin" {% if session.get('role') == 'Admin' %}selected{% endif %}>Admin</option>
+                        <option value="Doctor" {% if session.get('role') == 'Doctor' %}selected{% endif %}>Doctor</option>
+                        <option value="Receptionist" {% if session.get('role') == 'Receptionist' %}selected{% endif %}>Receptionist</option>
+                    </select>
+                </div>
             </div>
             <nav class="nav">
                 <a href="/hospital-dashboard" class="nav-item active"><i class="fa-solid fa-hospital"></i><span>Hospital Dashboard</span></a>
